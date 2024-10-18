@@ -10,6 +10,9 @@ npm-debug.*
 *.orig.*
 web-build/
 app-example
+health-metric-tracker-key.keystore
+important.md
+credentials.json
 
 # macOS
 .DS_Store
