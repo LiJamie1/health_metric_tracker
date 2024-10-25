@@ -52,7 +52,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="meal"
+        name="meals"
         options={{
           title: 'Meal Tracking',
           tabBarIcon: ({ color, focused }) => (

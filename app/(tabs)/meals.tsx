@@ -2,12 +2,12 @@ import { Platform, StyleSheet, StatusBar } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
-export default function BloodPressure() {
+export default function Meals() {
   return (
     <ThemedView>
       <StatusBar translucent />
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Blood Pressure</ThemedText>
+        <ThemedText type="title">Meals</ThemedText>
       </ThemedView>
     </ThemedView>
   );
