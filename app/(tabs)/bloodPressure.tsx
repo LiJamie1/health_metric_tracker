@@ -1,11 +1,10 @@
-import { Platform, StyleSheet, StatusBar } from 'react-native';
+import { StyleSheet, StatusBar } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function BloodPressure() {
   return (
     <ThemedView>
-      <StatusBar translucent />
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Blood Pressure</ThemedText>
       </ThemedView>
