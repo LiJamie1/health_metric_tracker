@@ -9,7 +9,8 @@ import { ThemedView } from '@/components/ThemedView';
 import { useState } from 'react';
 
 export default function Weight() {
-  interface InputData {
+  // Define Inputs Object
+  interface Inputs {
     Date: string;
     Lbs: string;
     FatPercentage: string;
@@ -19,21 +20,31 @@ export default function Weight() {
   const currentDate: Date = new Date();
   const formattedDate: string = currentDate.toLocaleDateString();
 
-  const [date, setDate] = useState<string>(formattedDate);
-  const [lbs, setLbs] = useState<string>('');
-  const [fatPercentage, setFatPercentage] = useState<string>('');
-  const [inputs, setInputs] = useState<InputData>({
+  const [inputs, setInputs] = useState<Inputs>({
     Date: formattedDate,
     Lbs: '',
     FatPercentage: '',
   });
 
-  const handleSubmit = () => {
-    setInputs({
+  // Handle TextInput changes
+  const handleDateChange = (date: string) => {
+    setInputs((prevInput) => ({
+      ...prevInput,
       Date: date,
+    }));
+  };
+
+  const handleLbsChange = (lbs: string) => {
+    setInputs((prevInput) => ({
+      ...prevInput,
       Lbs: lbs,
+    }));
+  };
+  const handleFatPercentageChange = (fatPercentage: string) => {
+    setInputs((prevInput) => ({
+      ...prevInput,
       FatPercentage: fatPercentage,
-    });
+    }));
   };
 
   return (
@@ -46,23 +57,23 @@ export default function Weight() {
           id="Date"
           style={styles.input}
           value={formattedDate}
-          onChangeText={setDate}
+          onChangeText={handleDateChange}
         ></TextInput>
         <TextInput
           id="Lbs"
           style={styles.input}
           placeholder="Lbs"
           keyboardType="numeric"
-          onChangeText={setLbs}
+          onChangeText={handleLbsChange}
         ></TextInput>
         <TextInput
           id="FatPercentage"
           style={styles.input}
           placeholder="Fat Percentage"
           keyboardType="numeric"
-          onChangeText={setFatPercentage}
+          onChangeText={handleFatPercentageChange}
         ></TextInput>
-        <Button title="Update" onPress={handleSubmit} />
+        <Button title="Update" />
         <ThemedText type="default">Date: {inputs.Date}</ThemedText>
         <ThemedText type="default">Lbs: {inputs.Lbs}</ThemedText>
         <ThemedText type="default">
