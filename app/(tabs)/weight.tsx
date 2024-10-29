@@ -3,6 +3,7 @@ import {
   StyleSheet,
   StatusBar,
   TextInput,
+  Platform,
 } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -27,53 +28,48 @@ export default function Weight() {
   });
 
   // Handle TextInput changes
-  const handleDateChange = (date: string) => {
+  const handleInputChange = (field: keyof Inputs, value: string) => {
     setInputs((prevInput) => ({
       ...prevInput,
-      Date: date,
-    }));
-  };
-
-  const handleLbsChange = (lbs: string) => {
-    setInputs((prevInput) => ({
-      ...prevInput,
-      Lbs: lbs,
-    }));
-  };
-  const handleFatPercentageChange = (fatPercentage: string) => {
-    setInputs((prevInput) => ({
-      ...prevInput,
-      FatPercentage: fatPercentage,
+      [field]: value,
     }));
   };
 
   return (
-    <ThemedView>
+    <ThemedView style={styles.container}>
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Weight</ThemedText>
       </ThemedView>
-      <ThemedView>
+      <ThemedView style={styles.content}>
         <TextInput
           id="Date"
           style={styles.input}
           value={formattedDate}
-          onChangeText={handleDateChange}
+          onChangeText={(text) => handleInputChange('Date', text)}
+          placeholderTextColor="#000000"
         ></TextInput>
+
         <TextInput
           id="Lbs"
           style={styles.input}
           placeholder="Lbs"
           keyboardType="numeric"
-          onChangeText={handleLbsChange}
+          onChangeText={(text) => handleInputChange('Lbs', text)}
+          placeholderTextColor="#000000"
         ></TextInput>
+
         <TextInput
           id="FatPercentage"
           style={styles.input}
           placeholder="Fat Percentage"
           keyboardType="numeric"
-          onChangeText={handleFatPercentageChange}
+          onChangeText={(text) =>
+            handleInputChange('FatPercentage', text)
+          }
+          placeholderTextColor="#000000"
         ></TextInput>
-        <Button title="Update" />
+        <Button title="Submit" />
+        {/* Testing purposes to see state changes */}
         <ThemedText type="default">Date: {inputs.Date}</ThemedText>
         <ThemedText type="default">Lbs: {inputs.Lbs}</ThemedText>
         <ThemedText type="default">
@@ -89,18 +85,24 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     paddingTop: StatusBar.currentHeight,
+    backgroundColor: '#222222',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  container: {
+    flex: 1,
   },
-  mainBody: {},
+  content: {
+    flex: 1,
+    padding: 32,
+    gap: 16,
+    justifyContent: 'center',
+    alignContent: 'center',
+  },
   input: {
     height: 40,
-    margin: 12,
+    width: '100%',
     borderWidth: 1,
     padding: 10,
     backgroundColor: '#faf7f5',
-    color: '#958e8b',
+    // color: '#000000',
   },
 });
