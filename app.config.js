@@ -30,12 +30,19 @@ export default {
       output: 'static',
       favicon: './assets/images/favicon.png',
     },
-    plugins: ['expo-router'],
+    plugins: [
+      'expo-router',
+      '@react-native-google-signin/google-signin',
+    ],
     experiments: {
       typedRoutes: true,
     },
     extra: {
-      localNetworkIp: process.env.LOCAL_NETWORK_IP,
+      eas: {
+        localNetworkIp: process.env.LOCAL_NETWORK_IP,
+        googleClientId: process.env.GOOGLE_CLIENT_ID,
+        projectId: 'c9e30459-7a2e-4333-b634-e760d0046ea9',
+      },
     },
   },
 };
