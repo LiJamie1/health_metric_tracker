@@ -12,7 +12,8 @@ import axios from 'axios';
 
 export default function Index() {
   // Get Local network ip to connect via expo go app if not default to localhost
-  // const localHost = LOCAL_NETWORK_IP ? LOCAL_NETWORK_IP : 'http://localhost:5000/';
+  const localHost =
+    'https://4886-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
 
   const configureGoogleSignIn = () => {
     GoogleSignin.configure({
@@ -57,18 +58,18 @@ export default function Index() {
   };
 
   // Get Axios Response from "/" endpoint declared in backend/src/index.ts
-  // const fetchData = async () => {
-  //   try {
-  //     const response = await axios.get(`${localHost}`);
-  //     console.log(response.data);
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`${localHost}`);
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
-  // const testLocalHost = () => {
-  //   console.log(localHost);
-  // };
+  const testLocalHost = () => {
+    console.log(localHost);
+  };
 
   const consoleUserInfo = () => {
     console.log(userInfo.type);
@@ -98,8 +99,8 @@ export default function Index() {
         )}
       </ThemedView>
       <ThemedView style={styles.content}>
-        {/* <Button title="Local Host Url Test" onPress={testLocalHost} />
-        <Button title="Backend Response Test" onPress={fetchData} /> */}
+        <Button title="Local Host Url Test" onPress={testLocalHost} />
+        <Button title="Backend Response Test" onPress={fetchData} />
         <Button title="Check userInfo" onPress={consoleUserInfo} />
       </ThemedView>
     </ThemedView>
