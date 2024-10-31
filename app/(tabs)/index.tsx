@@ -1,34 +1,14 @@
 import { useEffect, useState } from 'react';
 import { ThemedText } from 'src/components/ThemedText';
 import { ThemedView } from 'src/components/ThemedView';
-import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
+import { GoogleResponse } from 'src/interfaces/GoogleResponse';
+import styles from 'src/constants/Styling';
 import { Button } from 'react-native';
 import {
   GoogleSignin,
   GoogleSigninButton,
 } from '@react-native-google-signin/google-signin';
 import axios from 'axios';
-import styles from 'src/constants/Styling';
-
-interface User {
-  email: string;
-  familyName: string | null;
-  givenName: string | null;
-  id: string;
-  name: string | null;
-  photo: string | null;
-}
-interface Data {
-  idToken: string | null;
-  scopes: string[];
-  serverAuthCode: string | null;
-  user: User | null;
-}
-
-interface GoogleResponse {
-  data: Data | null;
-  type: string;
-}
 
 export default function Index() {
   // Get Local network ip to connect via expo go app if not default to localhost
@@ -116,7 +96,6 @@ export default function Index() {
             onPress={signIn}
           />
         )}
-        <ExpoStatusBar style="auto" />
       </ThemedView>
       <ThemedView style={styles.content}>
         {/* <Button title="Local Host Url Test" onPress={testLocalHost} />
