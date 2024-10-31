@@ -12,7 +12,6 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'dark'].tint,
-        headerShown: false,
       }}
     >
       <Tabs.Screen
@@ -28,7 +27,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="weight"
+        name="tracking/weight"
         options={{
           title: 'Body Weight',
           tabBarIcon: ({ color, focused }) => (
@@ -40,7 +39,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="bloodPressure"
+        name="tracking/bloodPressure"
         options={{
           title: 'Blood Pressure',
           tabBarIcon: ({ color, focused }) => (
@@ -52,7 +51,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="meals"
+        name="tracking/meals"
         options={{
           title: 'Meal Tracking',
           tabBarIcon: ({ color, focused }) => (

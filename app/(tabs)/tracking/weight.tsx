@@ -1,7 +1,7 @@
 import { Button, TextInput } from 'react-native';
 import { ThemedText } from 'src/components/ThemedText';
 import { ThemedView } from 'src/components/ThemedView';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import styles from 'src/constants/Styling';
 
 export default function Weight() {
@@ -32,9 +32,6 @@ export default function Weight() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Weight</ThemedText>
-      </ThemedView>
       <ThemedView style={styles.content}>
         <TextInput
           id="Date"
