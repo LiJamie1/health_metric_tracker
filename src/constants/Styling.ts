@@ -1,14 +1,9 @@
-import { StatusBar, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    paddingTop: StatusBar.currentHeight,
-    backgroundColor: '#222222',
-  },
   container: {
     flex: 1,
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
