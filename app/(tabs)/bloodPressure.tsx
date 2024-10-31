@@ -1,6 +1,6 @@
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import styles from '@/constants/Styling';
+import { ThemedText } from 'src/components/ThemedText';
+import { ThemedView } from 'src/components/ThemedView';
+import styles from 'src/constants/Styling';
 
 export default function BloodPressure() {
   return (

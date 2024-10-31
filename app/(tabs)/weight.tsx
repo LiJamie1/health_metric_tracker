@@ -1,8 +1,8 @@
 import { Button, TextInput } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from 'src/components/ThemedText';
+import { ThemedView } from 'src/components/ThemedView';
 import { useState } from 'react';
-import styles from '@/constants/Styling';
+import styles from 'src/constants/Styling';
 
 export default function Weight() {
   // Define Inputs Object
