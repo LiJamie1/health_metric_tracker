@@ -96,16 +96,6 @@ export default function Index() {
     console.log('Sign Out Successful');
   };
 
-  // Test Axios Response from "/" endpoint declared in backend/src/index.ts
-  const fetchData = async () => {
-    try {
-      const response = await axios.get(`${localHost}`);
-      console.log(response.data);
-    } catch (e) {
-      console.error('Error fetching data:', e);
-    }
-  };
-
   const fetchEmailTest = async () => {
     try {
       const response = await axios.get(`${localHost}/emailFromBack`);
@@ -129,7 +119,6 @@ export default function Index() {
         )}
       </ThemedView>
       <ThemedView style={styles.content}>
-        <Button title="Backend Response Test" onPress={fetchData} />
         <Button
           title="Email from Back End"
           onPress={fetchEmailTest}
