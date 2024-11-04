@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
 import { ThemedText } from 'src/components/ThemedText';
 import { ThemedView } from 'src/components/ThemedView';
-import { GoogleResponse } from 'src/interfaces/GoogleResponse';
 import styles from 'src/constants/Styling';
 import { Button } from 'react-native';
 import {
   GoogleSignin,
   GoogleSigninButton,
+  isSuccessResponse,
 } from '@react-native-google-signin/google-signin';
 import axios from 'axios';
+// interface for google response
+// import { GoogleResponse } from 'src/interfaces/GoogleResponse';
 
 export default function Index() {
+  // refresh with every new ngrok session
   const localHost =
-    'https://2329-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
+    'https://b202-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
 
   const configureGoogleSignIn = () => {
     GoogleSignin.configure({
@@ -30,38 +33,64 @@ export default function Index() {
     configureGoogleSignIn();
   });
 
-  const emptyUserInfo = {
-    data: null,
-    type: 'signedOut',
-  };
+  // const emptyUserInfo = {
+  //   data: null,
+  //   type: 'signedOut',
+  // };
 
   const [error, setError] = useState<string | null>(null);
   // Remove state for userInfo
   // Currently no reason to hold on to this
-  const [userInfo, setUserInfo] =
-    useState<GoogleResponse>(emptyUserInfo);
+  // const [userInfo, setUserInfo] =
+  //   useState<GoogleResponse>(emptyUserInfo);
+  const [signinStatus, setSigninStatus] = useState('signedOut');
+
+  const sendDataToBackend = async (
+    serverAuthCode: string | null,
+    idToken: string | null,
+    email: string
+  ) => {
+    try {
+      // make a post to /api/auth/google later for now just testing with /receive
+      const response = await axios.post(`${localHost}/receive`, {
+        serverAuthCode,
+        idToken,
+        email,
+      });
+      console.log(response.data);
+    } catch (e) {
+      console.error('sendDataToBackend:', e);
+    }
+  };
 
   const signIn = async () => {
     console.log('Pressed Sign In');
 
     try {
       await GoogleSignin.hasPlayServices();
-      const resUserInfo = await GoogleSignin.signIn();
-      // Add if with isSuccessResponse
-      // https://react-native-google-signin.github.io/docs/api#issuccessresponse
-      // Just send off serverAuthCode to backend via ${localHost}/api/auth/google
-      // Wait for a response from the backend that we got a token, no need to send the token
-      setUserInfo(resUserInfo);
-      setError(null);
-      console.log('Sign in Successful');
+      const googleResponse = await GoogleSignin.signIn();
+      if (isSuccessResponse(googleResponse)) {
+        const {
+          type,
+          data: {
+            idToken,
+            serverAuthCode,
+            user: { email },
+          },
+        } = googleResponse;
+        setSigninStatus(type);
+        setError(null);
+
+        sendDataToBackend(idToken, serverAuthCode, email);
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'An error occurred');
-      console.log(error);
+      console.log('signIn:', error);
     }
   };
 
   const logout = () => {
-    setUserInfo(emptyUserInfo);
+    setSigninStatus('signedOut');
     GoogleSignin.revokeAccess();
     GoogleSignin.signOut();
     console.log('Sign Out Successful');
@@ -72,28 +101,24 @@ export default function Index() {
     try {
       const response = await axios.get(`${localHost}`);
       console.log(response.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
+    } catch (e) {
+      console.error('Error fetching data:', e);
     }
   };
 
-  // Check userInfo state stored
-  // Will be removed as I don't need to hold on to user info for now
-  const consoleUserInfo = () => {
-    console.log(userInfo);
+  const fetchEmailTest = async () => {
+    try {
+      const response = await axios.get(`${localHost}/emailFromBack`);
+      console.log(response.data);
+    } catch (e) {
+      console.error('Error fetching data:', e);
+    }
   };
 
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>
-        {userInfo.type === 'success' ? (
-          <ThemedText type="default">
-            Hello {userInfo.data?.user?.name}
-          </ThemedText>
-        ) : (
-          <ThemedText type="default">{error}</ThemedText>
-        )}
-        {userInfo.type === 'success' ? (
+        {signinStatus === 'success' ? (
           <Button title="Logout" onPress={logout} />
         ) : (
           <GoogleSigninButton
@@ -105,6 +130,10 @@ export default function Index() {
       </ThemedView>
       <ThemedView style={styles.content}>
         <Button title="Backend Response Test" onPress={fetchData} />
+        <Button
+          title="Email from Back End"
+          onPress={fetchEmailTest}
+        />
       </ThemedView>
     </ThemedView>
   );

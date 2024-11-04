@@ -17,3 +17,18 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+
+let gEmail = '';
+
+//change to api/auth/google later
+app.post('/receive', (req, res) => {
+  const { serverAuthCode, idToken, email } = req.body;
+
+  gEmail = email;
+
+  res.send('sendDataToBackend Received');
+});
+
+app.get('/emailFromBack', (req, res) => {
+  res.send({ email: gEmail });
+});
