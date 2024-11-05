@@ -9,8 +9,6 @@ import {
   isSuccessResponse,
 } from '@react-native-google-signin/google-signin';
 import axios from 'axios';
-// interface for google response
-// import { GoogleResponse } from 'src/interfaces/GoogleResponse';
 
 export default function Index() {
   // refresh with every new ngrok session
@@ -33,30 +31,17 @@ export default function Index() {
     configureGoogleSignIn();
   });
 
-  // const emptyUserInfo = {
-  //   data: null,
-  //   type: 'signedOut',
-  // };
-
   const [error, setError] = useState<string | null>(null);
-  // Remove state for userInfo
-  // Currently no reason to hold on to this
-  // const [userInfo, setUserInfo] =
-  //   useState<GoogleResponse>(emptyUserInfo);
   const [signinStatus, setSigninStatus] = useState('signedOut');
 
-  const sendDataToBackend = async (
-    serverAuthCode: string | null,
-    idToken: string | null,
-    email: string
-  ) => {
+  const sendDataToBackend = async (serverAuthCode: string | null) => {
     try {
-      // make a post to /api/auth/google later for now just testing with /receive
-      const response = await axios.post(`${localHost}/receive`, {
-        serverAuthCode,
-        idToken,
-        email,
-      });
+      const response = await axios.post(
+        `${localHost}/api/auth/google`,
+        {
+          serverAuthCode,
+        }
+      );
       console.log(response.data);
     } catch (e) {
       console.error('sendDataToBackend:', e);
@@ -64,24 +49,19 @@ export default function Index() {
   };
 
   const signIn = async () => {
-    console.log('Pressed Sign In');
-
     try {
       await GoogleSignin.hasPlayServices();
       const googleResponse = await GoogleSignin.signIn();
       if (isSuccessResponse(googleResponse)) {
         const {
           type,
-          data: {
-            idToken,
-            serverAuthCode,
-            user: { email },
-          },
+          data: { idToken, serverAuthCode },
         } = googleResponse;
+
         setSigninStatus(type);
         setError(null);
 
-        sendDataToBackend(idToken, serverAuthCode, email);
+        sendDataToBackend(serverAuthCode);
       }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'An error occurred');
@@ -96,15 +76,6 @@ export default function Index() {
     console.log('Sign Out Successful');
   };
 
-  const fetchEmailTest = async () => {
-    try {
-      const response = await axios.get(`${localHost}/emailFromBack`);
-      console.log(response.data);
-    } catch (e) {
-      console.error('Error fetching data:', e);
-    }
-  };
-
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>
@@ -117,12 +88,6 @@ export default function Index() {
             onPress={signIn}
           />
         )}
-      </ThemedView>
-      <ThemedView style={styles.content}>
-        <Button
-          title="Email from Back End"
-          onPress={fetchEmailTest}
-        />
       </ThemedView>
     </ThemedView>
   );

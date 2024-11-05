@@ -1,6 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import axios from 'axios';
+import { URLSearchParams } from 'url';
 
 dotenv.config();
 
@@ -14,17 +16,39 @@ app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
 
-let gEmail = '';
+app.post('/api/auth/google', async (req, res) => {
+  const client_id = process.env.CLIENT_ID!;
+  const client_secret = process.env.CLIENT_SECRET!;
+  const redirect_uri = 'http://localhost:5000/api/auth/google';
+  const { serverAuthCode } = req.body;
 
-//change to api/auth/google later
-app.post('/receive', (req, res) => {
-  const { serverAuthCode, idToken, email } = req.body;
+  const params = {
+    code: serverAuthCode,
+    client_id,
+    client_secret,
+    redirect_uri,
+    grant_type: 'authorization_code',
+  };
 
-  gEmail = email;
+  const tokenUrl = 'https://oauth2.googleapis.com/token';
 
-  res.send('sendDataToBackend Received');
-});
-
-app.get('/emailFromBack', (req, res) => {
-  res.send({ email: gEmail });
+  try {
+    const response = await axios.post(
+      tokenUrl,
+      new URLSearchParams(params),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }
+    );
+    const { access_token, refresh_token, id_token } = response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error('Error message:', error.message);
+      console.error('Response data:', error.response?.data);
+    } else {
+      console.error('Unknown error:', error);
+    }
+  }
 });
