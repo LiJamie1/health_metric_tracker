@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { ThemedText } from 'src/components/ThemedText';
 import { ThemedView } from 'src/components/ThemedView';
 import styles from 'src/constants/Styling';
 import { Button } from 'react-native';
@@ -36,13 +35,9 @@ export default function Index() {
 
   const sendDataToBackend = async (serverAuthCode: string | null) => {
     try {
-      const response = await axios.post(
-        `${localHost}/api/auth/google`,
-        {
-          serverAuthCode,
-        }
-      );
-      console.log(response.data);
+      await axios.post(`${localHost}/api/auth/google`, {
+        serverAuthCode,
+      });
     } catch (e) {
       console.error('sendDataToBackend:', e);
     }
@@ -55,7 +50,7 @@ export default function Index() {
       if (isSuccessResponse(googleResponse)) {
         const {
           type,
-          data: { idToken, serverAuthCode },
+          data: { serverAuthCode },
         } = googleResponse;
 
         setSigninStatus(type);
@@ -76,6 +71,10 @@ export default function Index() {
     console.log('Sign Out Successful');
   };
 
+  const testSheets = async () => {
+    await axios.get(`${localHost}/test`);
+  };
+
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>
@@ -88,6 +87,9 @@ export default function Index() {
             onPress={signIn}
           />
         )}
+      </ThemedView>
+      <ThemedView style={styles.content}>
+        <Button title="Test Sheets Api" onPress={testSheets} />
       </ThemedView>
     </ThemedView>
   );
