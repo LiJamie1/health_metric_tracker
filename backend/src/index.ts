@@ -28,6 +28,13 @@ const oAuth2Client = new google.auth.OAuth2(
   redirect_uri
 );
 
+// Type guard to check if error is a GaxiosError
+function isGaxiosError(
+  err: unknown
+): err is Error & { response: { data: any; status: number } } {
+  return (err as any).response !== undefined;
+}
+
 // OAuth
 app.post('/api/auth/google', async (req, res) => {
   const { serverAuthCode } = req.body;
@@ -68,18 +75,16 @@ app.post('/api/auth/google', async (req, res) => {
   }
 });
 
-// Sheets
-const sheets = google.sheets({
-  version: 'v4',
-  auth: oAuth2Client,
-});
-
-// TEST route to get spread sheet value
+// TEST ROUTES
 app.get('/test', async (req, res) => {
+  const sheets = google.sheets({
+    version: 'v4',
+    auth: oAuth2Client,
+  });
   sheets.spreadsheets.values.get(
     {
-      spreadsheetId: process.env.SPREADSHEET_ID,
-      range: 'Sheet1!A1',
+      spreadsheetId: process.env.TEST_SPREADSHEET_ID,
+      range: 'Sheet1!A2',
     },
     (err, res) => {
       if (err) {
@@ -94,4 +99,71 @@ app.get('/test', async (req, res) => {
       }
     }
   );
+});
+
+app.post('/test/post', async (req, res) => {
+  const sheets = google.sheets({
+    version: 'v4',
+    auth: oAuth2Client,
+  });
+
+  const { testInput } = req.body;
+
+  const insertRequest = {
+    spreadsheetId: process.env.TEST_SPREADSHEET_ID,
+    requestBody: {
+      requests: [
+        {
+          insertDimension: {
+            range: {
+              sheetId: 0,
+              dimension: 'ROWS',
+              startIndex: 1,
+              endIndex: 2,
+            },
+            inheritFromBefore: true,
+          },
+        },
+        {
+          updateCells: {
+            range: {
+              sheetId: 0,
+              startRowIndex: 1,
+              endRowIndex: 2,
+              startColumnIndex: 0,
+              endColumnIndex: 1,
+            },
+            rows: [
+              {
+                values: [
+                  {
+                    userEnteredValue: {
+                      stringValue: testInput,
+                    },
+                  },
+                ],
+              },
+            ],
+            fields: 'userEnteredValue',
+          },
+        },
+      ],
+    },
+  };
+
+  try {
+    const response =
+      await sheets.spreadsheets.batchUpdate(insertRequest);
+    console.log('batch update successful:', response.data);
+  } catch (err: unknown) {
+    if (isGaxiosError(err)) {
+      // The error is a GaxiosError with a `response` property
+      console.error('Error response from API:', err.response.data);
+    } else {
+      // If it's not a GaxiosError, handle it as a general error
+      console.error('Unexpected error:', err);
+    }
+    // Return a user-friendly message
+    throw new Error('Failed to update the spreadsheet.');
+  }
 });

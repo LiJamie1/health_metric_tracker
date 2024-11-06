@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ThemedView } from 'src/components/ThemedView';
 import styles from 'src/constants/Styling';
-import { Button } from 'react-native';
+import { Button, TextInput } from 'react-native';
 import {
   GoogleSignin,
   GoogleSigninButton,
@@ -18,9 +18,7 @@ export default function Index() {
     GoogleSignin.configure({
       webClientId:
         '270383151259-tb94eleqlvhm3lt4i268qdu9re98a709.apps.googleusercontent.com',
-      scopes: [
-        'https://www.googleapis.com/auth/spreadsheets.readonly',
-      ],
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
       offlineAccess: true,
       forceCodeForRefreshToken: true,
     });
@@ -75,6 +73,16 @@ export default function Index() {
     await axios.get(`${localHost}/test`);
   };
 
+  const [testInput, setTestInput] = useState<string>('');
+
+  const handleInputChange = (testInput: string) => {
+    setTestInput(testInput);
+  };
+
+  const sendTestInputToBack = async () => {
+    await axios.post(`${localHost}/test/post`, { testInput });
+  };
+
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>
@@ -89,7 +97,18 @@ export default function Index() {
         )}
       </ThemedView>
       <ThemedView style={styles.content}>
-        <Button title="Test Sheets Api" onPress={testSheets} />
+        <Button title="Test Sheets Api GET" onPress={testSheets} />
+        <TextInput
+          id="Test Input"
+          style={styles.input}
+          placeholder="Test Input"
+          onChangeText={(text) => handleInputChange(text)}
+          placeholderTextColor="#000000"
+        ></TextInput>
+        <Button
+          title="Update Sheet"
+          onPress={() => sendTestInputToBack()}
+        />
       </ThemedView>
     </ThemedView>
   );
