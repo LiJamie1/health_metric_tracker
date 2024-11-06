@@ -69,20 +69,6 @@ export default function Index() {
     console.log('Sign Out Successful');
   };
 
-  const testSheets = async () => {
-    await axios.get(`${localHost}/test`);
-  };
-
-  const [testInput, setTestInput] = useState<string>('');
-
-  const handleInputChange = (testInput: string) => {
-    setTestInput(testInput);
-  };
-
-  const sendTestInputToBack = async () => {
-    await axios.post(`${localHost}/test/post`, { testInput });
-  };
-
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>
@@ -95,20 +81,6 @@ export default function Index() {
             onPress={signIn}
           />
         )}
-      </ThemedView>
-      <ThemedView style={styles.content}>
-        <Button title="Test Sheets Api GET" onPress={testSheets} />
-        <TextInput
-          id="Test Input"
-          style={styles.input}
-          placeholder="Test Input"
-          onChangeText={(text) => handleInputChange(text)}
-          placeholderTextColor="#000000"
-        ></TextInput>
-        <Button
-          title="Update Sheet"
-          onPress={() => sendTestInputToBack()}
-        />
       </ThemedView>
     </ThemedView>
   );
