@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ThemedView } from 'src/components/ThemedView';
 import styles from 'src/constants/Styling';
-import { Button, TextInput } from 'react-native';
+import { Button } from 'react-native';
 import {
   GoogleSignin,
   GoogleSigninButton,
@@ -69,6 +69,10 @@ export default function Index() {
     console.log('Sign Out Successful');
   };
 
+  const checkDateTest = () => {
+    axios.post(`${localHost}/dateCheckTest`);
+  };
+
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>
@@ -81,6 +85,7 @@ export default function Index() {
             onPress={signIn}
           />
         )}
+        <Button title="Date Check" onPress={checkDateTest} />
       </ThemedView>
     </ThemedView>
   );
