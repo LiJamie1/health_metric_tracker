@@ -72,6 +72,10 @@ app.post('/api/auth/google', async (req, res) => {
       access_token,
       refresh_token,
     });
+
+    res.status(200).json({
+      message: 'Successfully requested token',
+    });
   } catch (error: unknown) {
     console.error('Unknown error:', error);
   }

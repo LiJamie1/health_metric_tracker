@@ -33,11 +33,15 @@ export default function Index() {
 
   const sendDataToBackend = async (serverAuthCode: string | null) => {
     try {
-      await axios.post(`${localHost}/api/auth/google`, {
-        serverAuthCode,
-      });
+      const response = await axios.post(
+        `${localHost}/api/auth/google`,
+        {
+          serverAuthCode,
+        }
+      );
+      console.log('sendDataToBackend try:', response.data.message);
     } catch (e) {
-      console.error('sendDataToBackend:', e);
+      console.error('sendDataToBackend catch:', e);
     }
   };
 
