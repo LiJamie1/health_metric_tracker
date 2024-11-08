@@ -3,50 +3,44 @@ import { ThemedText } from 'src/components/ThemedText';
 import { ThemedView } from 'src/components/ThemedView';
 import React, { useState } from 'react';
 import styles from 'src/constants/Styling';
+import axios from 'axios';
 
 export default function Weight() {
-  // Define Inputs Object
-  interface Inputs {
-    Date: string;
-    Lbs: string;
-    FatPercentage: string;
-  }
+  // refresh with every new ngrok session
+  const localHost =
+    'https://b202-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
 
-  // Gets Date information
-  const currentDate: Date = new Date();
-  const formattedDate: string = currentDate.toLocaleDateString();
+  const [inputs, setInputs] = useState<any[]>(['', '']);
 
-  const [inputs, setInputs] = useState<Inputs>({
-    Date: formattedDate,
-    Lbs: '',
-    FatPercentage: '',
-  });
+  const handleInputChange = (
+    id: 'lbs' | 'fatPercentage',
+    value: string
+  ) => {
+    const index = id === 'lbs' ? 0 : 1;
+    setInputs((prevInputs) => {
+      const newInputs = [...prevInputs];
+      newInputs[index] = value;
+      return newInputs;
+    });
+  };
 
-  // Handle TextInput changes
-  const handleInputChange = (field: keyof Inputs, value: string) => {
-    setInputs((prevInput) => ({
-      ...prevInput,
-      [field]: value,
-    }));
+  const submitInputArray = async () => {
+    try {
+      await axios.post(`${localHost}/tracking/weight`, inputs);
+    } catch (e) {
+      console.error('submitInputArray:', e);
+    }
   };
 
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>
         <TextInput
-          id="Date"
-          style={styles.input}
-          value={formattedDate}
-          onChangeText={(text) => handleInputChange('Date', text)}
-          placeholderTextColor="#000000"
-        ></TextInput>
-
-        <TextInput
           id="Lbs"
           style={styles.input}
           placeholder="Lbs"
           keyboardType="numeric"
-          onChangeText={(text) => handleInputChange('Lbs', text)}
+          onChangeText={(value) => handleInputChange('lbs', value)}
           placeholderTextColor="#000000"
         ></TextInput>
 
@@ -55,17 +49,17 @@ export default function Weight() {
           style={styles.input}
           placeholder="Fat Percentage"
           keyboardType="numeric"
-          onChangeText={(text) =>
-            handleInputChange('FatPercentage', text)
+          onChangeText={(value) =>
+            handleInputChange('fatPercentage', value)
           }
           placeholderTextColor="#000000"
         ></TextInput>
-        <Button title="Submit" />
+        {/* Submit should send an array to the backend -> [lbs, fp] */}
+        <Button title="Submit" onPress={submitInputArray} />
         {/* Testing purposes to see state changes */}
-        <ThemedText type="default">Date: {inputs.Date}</ThemedText>
-        <ThemedText type="default">Lbs: {inputs.Lbs}</ThemedText>
+        <ThemedText type="default">Lbs: {inputs[0]}</ThemedText>
         <ThemedText type="default">
-          Fat Percentage: {inputs.FatPercentage}
+          Fat Percentage: {inputs[1]}
         </ThemedText>
       </ThemedView>
     </ThemedView>
