@@ -36,6 +36,7 @@ export default function Weight() {
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>
         <TextInput
+          key="Lbs"
           id="Lbs"
           style={styles.input}
           placeholder="Lbs"
@@ -45,6 +46,7 @@ export default function Weight() {
         ></TextInput>
 
         <TextInput
+          key="FatPercentage"
           id="FatPercentage"
           style={styles.input}
           placeholder="Fat Percentage"
