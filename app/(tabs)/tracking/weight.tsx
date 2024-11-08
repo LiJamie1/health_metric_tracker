@@ -8,18 +8,18 @@ import axios from 'axios';
 export default function Weight() {
   // refresh with every new ngrok session
   const localHost =
-    'https://b202-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
+    'https://6c72-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
 
-  const [inputs, setInputs] = useState<any[]>(['', '']);
+  const [inputs, setInputs] = useState<any[]>([0, 0]);
 
   const handleInputChange = (
     id: 'lbs' | 'fatPercentage',
-    value: string
+    input: string
   ) => {
     const index = id === 'lbs' ? 0 : 1;
     setInputs((prevInputs) => {
       const newInputs = [...prevInputs];
-      newInputs[index] = value;
+      newInputs[index] = parseFloat(input);
       return newInputs;
     });
   };
@@ -40,7 +40,7 @@ export default function Weight() {
           style={styles.input}
           placeholder="Lbs"
           keyboardType="numeric"
-          onChangeText={(value) => handleInputChange('lbs', value)}
+          onChangeText={(input) => handleInputChange('lbs', input)}
           placeholderTextColor="#000000"
         ></TextInput>
 
@@ -49,8 +49,8 @@ export default function Weight() {
           style={styles.input}
           placeholder="Fat Percentage"
           keyboardType="numeric"
-          onChangeText={(value) =>
-            handleInputChange('fatPercentage', value)
+          onChangeText={(input) =>
+            handleInputChange('fatPercentage', input)
           }
           placeholderTextColor="#000000"
         ></TextInput>

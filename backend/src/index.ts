@@ -77,7 +77,10 @@ app.post('/api/auth/google', async (req, res) => {
       message: 'Successfully requested token',
     });
   } catch (error: unknown) {
-    console.error('Unknown error:', error);
+    console.log('Auth failed', error);
+    res.status(500).json({
+      message: 'Internal server error',
+    });
   }
 });
 

@@ -12,7 +12,7 @@ import axios from 'axios';
 export default function Index() {
   // refresh with every new ngrok session
   const localHost =
-    'https://b202-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
+    'https://6c72-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
 
   const configureGoogleSignIn = () => {
     GoogleSignin.configure({
@@ -39,9 +39,9 @@ export default function Index() {
           serverAuthCode,
         }
       );
-      console.log('sendDataToBackend try:', response.data.message);
+      console.log('Sign in success:', response.data.message);
     } catch (e) {
-      console.error('sendDataToBackend catch:', e);
+      console.error('Sign in failed:', e);
     }
   };
 
