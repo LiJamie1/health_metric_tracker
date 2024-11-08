@@ -33,6 +33,7 @@ const [formattedTime, dayPeriod] = localTime.split(' ');
 const client_id = process.env.CLIENT_ID!;
 const client_secret = process.env.CLIENT_SECRET!;
 const redirect_uri = 'http://localhost:5000/api/auth/google';
+// TODO change to use actual spreadsheet later
 const spreadsheetId = process.env.TEST_SPREADSHEET_ID;
 
 // OAuth
@@ -115,6 +116,13 @@ const dateCheck = async (
 };
 
 // Sheet configs
+interface SheetOption {
+  sheetId: number;
+  startRowIndex: number;
+  endRowIndex: number;
+  startColumnIndex: number;
+  endColumnIndex: number;
+}
 // range options for individual sheets
 const weightSheetOptions = {
   sheetId: 1606005094,
@@ -140,7 +148,7 @@ const bpSheetOptions = {
   },
 };
 
-// Note - Using weight configurations
+// TODO remove and replace with relevant sheetOptions
 const testSheetOptions = {
   sheetId: 0,
   startRowIndex: 1,
@@ -149,73 +157,52 @@ const testSheetOptions = {
   endColumnIndex: 3,
 };
 
-// Templates
-// BatchUpdate: to use push object into batchUpdateRequest.requestBody.requests
-// insertDimension needs sheetId - batchUpdateRequest.requestBody.requests[0].insertDimension.range.sheetId = xOptions.sheetId
-// Push in order of operations
-const batchUpdateRequest = {
-  spreadsheetId: spreadsheetId,
-  requestBody: {
-    requests: [
-      {
-        insertDimension: {
-          range: {
-            sheetId: -1,
-            dimension: 'ROWS',
-            startIndex: 1,
-            endIndex: 2,
-          },
-          inheritFromBefore: true,
-        },
-      },
-    ],
-  },
-};
-
-const updateCellsRequest = {
-  updateCells: {
-    range: {},
-    rows: [
-      {
-        values: [] as { userEnteredValue: { stringValue: string } }[],
-      },
-    ],
-    fields: 'userEnteredValue',
-  },
-};
-
 // Function to generate a values array for sheets updateCells method
 // replaces updateCellsRequest.updateCells.rows[0].values
 const valuesFormatting = (inputs: any[]) => {
-  const newArray = [];
-
-  for (let i = 0; i < inputs.length; i++) {
-    newArray.push({
-      userEnteredValue: {
-        stringValue: inputs[i],
-      },
-    });
-  }
-
-  return newArray;
+  return inputs.map((input) => ({
+    userEnteredValue: { stringValue: input },
+  }));
 };
 
 // currently using testSheetOptions
-// TODO add new param for xSheetOptions
-const formatBatchUpdateRequest = async (inputs: any[]) => {
-  let finalRequest = JSON.parse(JSON.stringify(batchUpdateRequest)); // deep copy batchUpdateRequest
-  // insert row above in batchUpdate
-  finalRequest.requestBody.requests[0].insertDimension.range.sheetId =
-    testSheetOptions.sheetId; // reassign sheetId from -1 to weightSheetOptions sheetId
-  // create/format/insert updateCells object
-  let finalUpdateCellsRequest = updateCellsRequest; // copy updateCellsRequest
-  finalUpdateCellsRequest.updateCells.range = testSheetOptions; // reassign range to weightSheetOptions
-  const inputsFormatted = valuesFormatting(inputs); // format inputs array for cellsUpdate in batchUpdate
-  finalUpdateCellsRequest.updateCells.rows[0].values =
-    inputsFormatted; // reassign values to inputsFormatted
-  // add finalUpdateCellsRequest to finalRequest
-  finalRequest.requestBody.requests.push(finalUpdateCellsRequest);
-  // finalRequest should now contain, spreadsheetId, insert row above, insert inputs
+// Only used with batchUpdates for the following consecutive actions insert row above, insert data
+const formatBatchUpdateRequest = async (
+  inputs: any[],
+  sheetOptions: SheetOption
+) => {
+  const { sheetId, ...rangeOptions } = sheetOptions;
+  const insertDimensionRequest = {
+    insertDimension: {
+      range: {
+        sheetId,
+        dimension: 'ROWS',
+        startIndex: 1,
+        endIndex: 2,
+      },
+      inheritFromBefore: true,
+    },
+  };
+
+  const updateCellsRequest = {
+    updateCells: {
+      range: rangeOptions,
+      rows: [
+        {
+          values: valuesFormatting(inputs),
+        },
+      ],
+      fields: 'userEnteredValue',
+    },
+  };
+
+  const finalRequest = {
+    spreadsheetId,
+    requestBody: {
+      requests: [insertDimensionRequest, updateCellsRequest],
+    },
+  };
+
   return finalRequest;
 };
 
@@ -231,7 +218,10 @@ app.post('/tracking/weight', async (req, res) => {
   // Add formatted Date to inputs array for formatBatchUpdateRequest
   const inputs = [formattedDate, ...req.body];
 
-  const weightBatchRequest = await formatBatchUpdateRequest(inputs);
+  const weightBatchRequest = await formatBatchUpdateRequest(
+    inputs,
+    testSheetOptions
+  );
 
   try {
     await sheets.spreadsheets.batchUpdate(weightBatchRequest);
