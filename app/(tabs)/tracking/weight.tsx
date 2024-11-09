@@ -27,7 +27,7 @@ export default function Weight() {
   const submitInputArray = async () => {
     try {
       await axios.post(`${localHost}/tracking/weight`, inputs);
-    } catch (e) {
+    } catch (e: unknown) {
       console.error('submitInputArray:', e);
     }
   };

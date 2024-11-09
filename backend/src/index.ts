@@ -76,8 +76,8 @@ app.post('/api/auth/google', async (req, res) => {
     res.status(200).json({
       message: 'Successfully requested token',
     });
-  } catch (error: unknown) {
-    console.log('Auth failed', error);
+  } catch (e: unknown) {
+    console.log('Auth failed', e);
     res.status(500).json({
       message: 'Internal server error',
     });
@@ -116,9 +116,9 @@ const dateCheck = async (
       );
       return false;
     }
-  } catch (error: unknown) {
+  } catch (e: unknown) {
     console.log('dateCheck error');
-    console.error('Unknown error:', error);
+    console.error('Unknown error:', e);
   }
 };
 
@@ -233,8 +233,8 @@ app.post('/tracking/weight', async (req, res) => {
   try {
     await sheets.spreadsheets.batchUpdate(weightBatchRequest);
     res.status(200).send('Weight data updated successfully!');
-  } catch (error: unknown) {
-    console.error('Error during batch update', error);
+  } catch (e: unknown) {
+    console.error('Error during batch update', e);
     res.status(500).send('Error updating weight data');
   }
 });

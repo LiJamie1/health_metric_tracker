@@ -3,6 +3,7 @@ import { Button, TextInput } from 'react-native';
 import { ThemedText } from 'src/components/ThemedText';
 import { ThemedView } from 'src/components/ThemedView';
 import styles from 'src/constants/Styling';
+import axios from 'axios';
 
 export default function BloodPressure() {
   const localHost =
@@ -60,7 +61,25 @@ export default function BloodPressure() {
     });
   };
 
-  //TODO Extract TextInput to reduce repetition
+  const submitResultsArray = async () => {
+    const finalResultsArray = Object.entries(inputs).map(
+      ([key, values]) => {
+        const mean =
+          values.reduce((sum, val) => sum + val, 0) / values.length;
+        return Math.round(mean); // Round to the nearest full digit
+      }
+    );
+
+    try {
+      await axios.post(
+        `${localHost}/tracking/blood%20pressure`,
+        finalResultsArray
+      );
+    } catch (e: unknown) {
+      console.error('submitResultsArray', e);
+    }
+  };
+
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>
@@ -70,7 +89,7 @@ export default function BloodPressure() {
           onPress={() => toggleOnPress()}
           color={isDay ? '#007aff' : '#0020A3'}
         />
-        <Button title="Submit" />
+        <Button title="Submit" onPress={submitResultsArray} />
       </ThemedView>
     </ThemedView>
   );

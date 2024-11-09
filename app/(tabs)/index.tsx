@@ -28,7 +28,6 @@ export default function Index() {
     configureGoogleSignIn();
   });
 
-  const [error, setError] = useState<string | null>(null);
   const [signinStatus, setSigninStatus] = useState('signedOut');
 
   const sendDataToBackend = async (serverAuthCode: string | null) => {
@@ -40,7 +39,7 @@ export default function Index() {
         }
       );
       console.log('Sign in success:', response.data.message);
-    } catch (e) {
+    } catch (e: unknown) {
       console.error('Sign in failed:', e);
     }
   };
@@ -56,13 +55,11 @@ export default function Index() {
         } = googleResponse;
 
         setSigninStatus(type);
-        setError(null);
 
         sendDataToBackend(serverAuthCode);
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'An error occurred');
-      console.log('signIn:', error);
+      console.error('signIn:', e);
     }
   };
 
