@@ -18,7 +18,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 10,
     backgroundColor: '#faf7f5',
-    // color: '#000000',
+    color: '#000000',
+  },
+  sideBySideInputsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 20,
+  },
+  sideBySideInputs: {
+    flex: 1,
+    height: 40,
+    borderWidth: 1,
+    paddingLeft: 10,
+    backgroundColor: '#faf7f5',
+    color: '#000000',
   },
 });
 

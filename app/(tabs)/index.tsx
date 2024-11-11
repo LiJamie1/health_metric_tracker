@@ -12,7 +12,7 @@ import axios from 'axios';
 export default function Index() {
   // refresh with every new ngrok session
   const localHost =
-    'https://6c72-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
+    'https://6701-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
 
   const configureGoogleSignIn = () => {
     GoogleSignin.configure({
@@ -74,6 +74,7 @@ export default function Index() {
     axios.post(`${localHost}/dateCheckTest`);
   };
 
+  //TODO Add keys to components
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>

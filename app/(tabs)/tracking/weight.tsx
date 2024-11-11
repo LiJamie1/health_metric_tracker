@@ -8,7 +8,7 @@ import axios from 'axios';
 export default function Weight() {
   // refresh with every new ngrok session
   const localHost =
-    'https://6c72-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
+    'https://6701-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
 
   const [inputs, setInputs] = useState<any[]>([0, 0]);
 
@@ -32,6 +32,7 @@ export default function Weight() {
     }
   };
 
+  //TODO Add keys to components
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>
