@@ -4,6 +4,7 @@ import cors from 'cors';
 import axios from 'axios';
 import { URLSearchParams } from 'url';
 import { google, sheets_v4 } from 'googleapis';
+import { error } from 'console';
 
 dotenv.config();
 
@@ -145,11 +146,13 @@ const testBpSheetOptions = {
 };
 
 //* Functions
-//TODO Refactor to make more readable
 const dateCheck = async (
   spreadsheetId: string | undefined,
   sheetName: string
 ) => {
+  if (!spreadsheetId)
+    throw new Error('Spreadsheet ID is required, dateCheck');
+
   const sheets = google.sheets({
     version: 'v4',
     auth: oAuth2Client,
@@ -160,34 +163,26 @@ const dateCheck = async (
       spreadsheetId,
       range: `${sheetName}!A2`,
     });
-    const newArray: any[] | undefined = response.data.values?.flat();
-    if (newArray === undefined) {
-      console.log('dateChecked undefined');
-      throw new Error('dateCheck newArray returned undefined');
-    } else if (newArray && newArray[0] === formattedDate) {
-      console.log(
-        'dateCheck True, Cell A2:',
-        newArray[0],
-        'Current Date:',
-        formattedDate
-      );
-      return true;
-    } else {
-      console.log(
-        'dateCheck False, Cell A2:',
-        newArray[0],
-        'Current Date:',
-        formattedDate
-      );
-      return false;
+
+    const values = response.data.values?.flat();
+
+    if (!values || values.length === 0) {
+      const errorMessage = 'Cell A2 is empty or not found.';
+      console.error(`dateCheck: ${errorMessage}`);
+      throw new Error(errorMessage);
     }
+    const isDateCorrect = values[0] === formattedDate;
+
+    console.log(
+      `dateCheck: Cell A2 contains "${values[0]}" - ${isDateCorrect ? 'Match' : 'No match'} with current date (${formattedDate})`
+    );
+
+    return isDateCorrect;
   } catch (e: unknown) {
-    console.log('dateCheck error');
-    if (e instanceof Error) {
-      throw new Error('Something went wrong: ' + e.message);
-    } else {
-      throw new Error('Something went wrong: Unknown error');
-    }
+    const errorMessage =
+      e instanceof Error ? e.message : 'Unknown error';
+    console.log('dateCheck: Error occurred:', errorMessage);
+    throw new Error(`Something went wrong: ${errorMessage}`);
   }
 };
 
@@ -208,7 +203,6 @@ const valuesFormatting = (inputs: (string | number)[]) => {
 };
 
 // Only used with batchUpdates for the following consecutive actions insert row above, insert data
-//TODO Add dateCheck results to this so conditionally add insertDimension Request
 const formatBatchUpdateRequest = async (
   inputs: (string | number)[],
   sheetOptions: SheetOption,
@@ -313,12 +307,15 @@ app.post('/tracking/blood-pressure', async (req, res) => {
   });
 
   const { finalResultsArray, isDay } = req.body;
+  console.log('isDay', isDay);
+
   const finalSheetOptions = {
     sheetId: testBpSheetOptions.sheetId,
     ...testBpSheetOptions[isDay ? 'AM' : 'PM'],
   };
   //TODO replace 'Sheet1' with correct sheetName
   const dateCorrect = await dateCheck(spreadsheetId, 'Sheet1');
+  console.log('dateCorrect', dateCorrect);
 
   const bpBatchRequest = await formatBatchUpdateRequest(
     [formattedTime, ...finalResultsArray],
