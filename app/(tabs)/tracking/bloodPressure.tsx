@@ -86,24 +86,6 @@ export default function BloodPressure() {
     }
   };
 
-  // * Testing for state and final result
-  // TODO REMOVE LATER ALONG WITH ASSOCIATED BUTTONS
-  const consoleState = () => {
-    console.log('inputs state', inputs);
-  };
-
-  const consoleResult = () => {
-    const finalResultsArray = Object.entries(inputs).map(
-      ([key, values]) => {
-        const mean =
-          values.reduce((sum, val) => sum + val, 0) / values.length;
-        return Math.round(mean); // Round to the nearest full digit
-      }
-    );
-
-    console.log(finalResultsArray);
-  };
-
   return (
     <ThemedView key="mainContainer" style={styles.container}>
       <ThemedView key="subContainer" style={styles.content}>
@@ -118,17 +100,6 @@ export default function BloodPressure() {
           key="bpSubmit"
           title="Submit"
           onPress={submitResultsArray}
-        />
-
-        <Button
-          key="test1Button"
-          title="Log State"
-          onPress={consoleState}
-        />
-        <Button
-          key="test2Button"
-          title="Log Result"
-          onPress={consoleResult}
         />
       </ThemedView>
     </ThemedView>

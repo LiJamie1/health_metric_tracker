@@ -70,10 +70,6 @@ export default function Index() {
     console.log('Sign Out Successful');
   };
 
-  const checkDateTest = () => {
-    axios.post(`${localHost}/dateCheckTest`);
-  };
-
   //TODO Add keys to components
   return (
     <ThemedView style={styles.container}>
@@ -87,7 +83,6 @@ export default function Index() {
             onPress={signIn}
           />
         )}
-        <Button title="Date Check" onPress={checkDateTest} />
       </ThemedView>
     </ThemedView>
   );

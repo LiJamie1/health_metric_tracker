@@ -5,6 +5,7 @@ import axios from 'axios';
 import { URLSearchParams } from 'url';
 import { google, sheets_v4 } from 'googleapis';
 import { error } from 'console';
+import { emitWarning } from 'process';
 
 dotenv.config();
 
@@ -116,13 +117,13 @@ const bpSheetOptions = {
     startRowIndex: 1,
     endRowIndex: 2,
     startColumnIndex: 5,
-    endColumnIndex: 8,
+    endColumnIndex: 9,
   },
 };
 
 //! remove and replace with relevant sheetOptions later
 const testWeightSheetOptions = {
-  sheetId: 0,
+  sheetId: 306586463,
   startRowIndex: 1,
   endRowIndex: 2,
   startColumnIndex: 1,
@@ -141,7 +142,7 @@ const testBpSheetOptions = {
     startRowIndex: 1,
     endRowIndex: 2,
     startColumnIndex: 5,
-    endColumnIndex: 8,
+    endColumnIndex: 9,
   },
 };
 
@@ -199,7 +200,7 @@ const valuesFormatting = (inputs: (string | number)[]) => {
         return null;
       }
     })
-    .filter((value) => value !== null); // Filter out any null values to avoid sending invalid data
+    .filter((value) => value !== null);
 };
 
 // Only used with batchUpdates for the following consecutive actions insert row above, insert data
@@ -245,7 +246,7 @@ const formatBatchUpdateRequest = async (
 
   const updateCellsRequest = {
     updateCells: {
-      range: rangeOptions,
+      range: { sheetId, ...rangeOptions },
       rows: [
         {
           values: valuesFormatting(inputs),
@@ -274,8 +275,10 @@ const formatBatchUpdateRequest = async (
 };
 
 //* Weight
-//! Using testSheetOptions
+//! Using testWeightSheetOptions
 //TODO Replace testWeightSheetOptions
+//* Test - make a request to record data
+//* Expected Result - Sheet 2 has new row with date, lbs and f% data
 app.post('/tracking/weight', async (req, res) => {
   const sheets = google.sheets({
     version: 'v4',
@@ -299,7 +302,12 @@ app.post('/tracking/weight', async (req, res) => {
 });
 
 //* Blood Pressure
+//! Using testBpSheetOptions
 //TODO Replace testBpSheetOptions
+//* Test - make request where night is toggled
+//* Expected Result - Sheet 1 has a new row, date and cells F2-I2 are filled while B2-E2 are empty
+//* Test - make another request where day is toggled
+//* Expected Result - Sheet 1 cells B2-E2 which were previously empty are now filled
 app.post('/tracking/blood-pressure', async (req, res) => {
   const sheets = google.sheets({
     version: 'v4',
@@ -307,7 +315,6 @@ app.post('/tracking/blood-pressure', async (req, res) => {
   });
 
   const { finalResultsArray, isDay } = req.body;
-  console.log('isDay', isDay);
 
   const finalSheetOptions = {
     sheetId: testBpSheetOptions.sheetId,
@@ -315,7 +322,6 @@ app.post('/tracking/blood-pressure', async (req, res) => {
   };
   //TODO replace 'Sheet1' with correct sheetName
   const dateCorrect = await dateCheck(spreadsheetId, 'Sheet1');
-  console.log('dateCorrect', dateCorrect);
 
   const bpBatchRequest = await formatBatchUpdateRequest(
     [formattedTime, ...finalResultsArray],
@@ -333,11 +339,6 @@ app.post('/tracking/blood-pressure', async (req, res) => {
 });
 
 //* Meals
-
-//* Tests
-app.post('/dateCheckTest', async (req, res) => {
-  await dateCheck(spreadsheetId, 'Sheet1');
-});
 
 //* Initialize sheets - Goes in each route, avoid stale state etc
 // const sheets = google.sheets({

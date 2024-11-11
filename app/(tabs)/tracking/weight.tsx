@@ -1,5 +1,4 @@
 import { Button, TextInput } from 'react-native';
-import { ThemedText } from 'src/components/ThemedText';
 import { ThemedView } from 'src/components/ThemedView';
 import React, { useState } from 'react';
 import styles from 'src/constants/Styling';
@@ -57,13 +56,7 @@ export default function Weight() {
           }
           placeholderTextColor="#000000"
         ></TextInput>
-        {/* Submit should send an array to the backend -> [lbs, fp] */}
         <Button title="Submit" onPress={submitInputArray} />
-        {/* Testing purposes to see state changes */}
-        <ThemedText type="default">Lbs: {inputs[0]}</ThemedText>
-        <ThemedText type="default">
-          Fat Percentage: {inputs[1]}
-        </ThemedText>
       </ThemedView>
     </ThemedView>
   );
