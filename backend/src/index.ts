@@ -119,12 +119,28 @@ const bpSheetOptions = {
 };
 
 //! remove and replace with relevant sheetOptions later
-const testSheetOptions = {
+const testWeightSheetOptions = {
   sheetId: 0,
   startRowIndex: 1,
   endRowIndex: 2,
   startColumnIndex: 0,
   endColumnIndex: 3,
+};
+
+const testBpSheetOptions = {
+  sheetId: 0,
+  AM: {
+    startRowIndex: 1,
+    endRowIndex: 2,
+    startColumnIndex: 1,
+    endColumnIndex: 6,
+  },
+  PM: {
+    startRowIndex: 1,
+    endRowIndex: 2,
+    startColumnIndex: 6,
+    endColumnIndex: 10,
+  },
 };
 
 //* Functions
@@ -175,17 +191,28 @@ const dateCheck = async (
 };
 
 // Function to generate a values array for sheets updateCells method
-//TODO Refactor to only allow array of string and number
 //TODO At a later date refactor to allow formatting of cells
-const valuesFormatting = (inputs: any[]) => {
-  return inputs.map((input) => ({
-    userEnteredValue: { stringValue: input },
-  }));
+const valuesFormatting = (inputs: (string | number)[]) => {
+  return inputs
+    .map((input) => {
+      if (typeof input === 'string') {
+        return { userEnteredValue: { stringValue: input } };
+      } else if (typeof input === 'number') {
+        return { userEnteredValue: { numberValue: input } };
+      } else {
+        return null;
+      }
+    })
+    .filter((value) => value !== null); // Filter out any null values to avoid sending invalid data
 };
 
 // Only used with batchUpdates for the following consecutive actions insert row above, insert data
+//TODO Add dateCheck results to this so conditionally add insertDimension Request
+//TODO Break this up even further into insertDimension Request, insert Date, insert Data
+//TODO Currently insert Date and insert Data operation is merged as one
+//TODO Makes it so you can't smoothly add date and data if you choose PM writes to cells A2 and F2-I2
 const formatBatchUpdateRequest = async (
-  inputs: any[],
+  inputs: (string | number)[],
   sheetOptions: SheetOption
 ) => {
   const { sheetId, ...rangeOptions } = sheetOptions;
@@ -225,7 +252,7 @@ const formatBatchUpdateRequest = async (
 
 //* Weight
 //! Using testSheetOptions
-//TODO Replace testSheetOptions with weightSheetOptions in weightBatchRequest
+//TODO Replace testWeightSheetOptions
 app.post('/tracking/weight', async (req, res) => {
   const sheets = google.sheets({
     version: 'v4',
@@ -237,7 +264,7 @@ app.post('/tracking/weight', async (req, res) => {
 
   const weightBatchRequest = await formatBatchUpdateRequest(
     inputs,
-    testSheetOptions
+    testWeightSheetOptions
   );
 
   try {
@@ -250,6 +277,7 @@ app.post('/tracking/weight', async (req, res) => {
 });
 
 //* Blood Pressure
+//TODO Replace testBpSheetOptions
 app.post('/tracking/blood-pressure', async (req, res) => {
   const sheets = google.sheets({
     version: 'v4',
@@ -259,15 +287,17 @@ app.post('/tracking/blood-pressure', async (req, res) => {
   const { finalResultsArray, isDay } = req.body;
   const timeOfDay = isDay ? 'AM' : 'PM';
   const finalSheetOptions = {
-    sheetId: bpSheetOptions.sheetId,
-    ...bpSheetOptions[timeOfDay],
+    sheetId: testBpSheetOptions.sheetId,
+    ...testBpSheetOptions[timeOfDay],
   };
   //TODO replace 'Sheet1' with correct sheetName
   const dateCorrect = await dateCheck(spreadsheetId, 'Sheet1');
-  let inputs: any[] = [];
-  if (dateCorrect) {
+
+  let inputs: string | number[] = [];
+
+  if (!dateCorrect) {
     inputs = [formattedDate, formattedTime, ...finalResultsArray];
-  } else if (!dateCorrect) {
+  } else if (dateCorrect) {
     inputs = [formattedTime, ...finalResultsArray];
   } else {
     res.status(500).json({
