@@ -28,6 +28,7 @@ const localTime: string = currentDate.toLocaleTimeString([], {
   minute: '2-digit',
   hour12: true,
 });
+//TODO Remove dayPeriod if left unused
 const [formattedTime, dayPeriod] = localTime.split(' ');
 
 const client_id = process.env.CLIENT_ID!;
@@ -98,7 +99,7 @@ const weightSheetOptions = {
   sheetId: 1606005094,
   startRowIndex: 1,
   endRowIndex: 2,
-  startColumnIndex: 0,
+  startColumnIndex: 1,
   endColumnIndex: 3,
 };
 
@@ -108,13 +109,13 @@ const bpSheetOptions = {
     startRowIndex: 1,
     endRowIndex: 2,
     startColumnIndex: 1,
-    endColumnIndex: 6,
+    endColumnIndex: 5,
   },
   PM: {
     startRowIndex: 1,
     endRowIndex: 2,
-    startColumnIndex: 6,
-    endColumnIndex: 10,
+    startColumnIndex: 5,
+    endColumnIndex: 8,
   },
 };
 
@@ -123,7 +124,7 @@ const testWeightSheetOptions = {
   sheetId: 0,
   startRowIndex: 1,
   endRowIndex: 2,
-  startColumnIndex: 0,
+  startColumnIndex: 1,
   endColumnIndex: 3,
 };
 
@@ -133,13 +134,13 @@ const testBpSheetOptions = {
     startRowIndex: 1,
     endRowIndex: 2,
     startColumnIndex: 1,
-    endColumnIndex: 6,
+    endColumnIndex: 5,
   },
   PM: {
     startRowIndex: 1,
     endRowIndex: 2,
-    startColumnIndex: 6,
-    endColumnIndex: 10,
+    startColumnIndex: 5,
+    endColumnIndex: 8,
   },
 };
 
@@ -208,12 +209,10 @@ const valuesFormatting = (inputs: (string | number)[]) => {
 
 // Only used with batchUpdates for the following consecutive actions insert row above, insert data
 //TODO Add dateCheck results to this so conditionally add insertDimension Request
-//TODO Break this up even further into insertDimension Request, insert Date, insert Data
-//TODO Currently insert Date and insert Data operation is merged as one
-//TODO Makes it so you can't smoothly add date and data if you choose PM writes to cells A2 and F2-I2
 const formatBatchUpdateRequest = async (
   inputs: (string | number)[],
-  sheetOptions: SheetOption
+  sheetOptions: SheetOption,
+  dateCorrect: boolean
 ) => {
   const { sheetId, ...rangeOptions } = sheetOptions;
   const insertDimensionRequest = {
@@ -225,6 +224,28 @@ const formatBatchUpdateRequest = async (
         endIndex: 2,
       },
       inheritFromBefore: true,
+    },
+  };
+
+  const updateDateCellRequest = {
+    updateCells: {
+      range: {
+        sheetId,
+        startRowIndex: 1,
+        endRowIndex: 2,
+        startColumnIndex: 0,
+        endColumnIndex: 1,
+      },
+      rows: [
+        {
+          values: [
+            {
+              userEnteredValue: { stringValue: formattedDate },
+            },
+          ],
+        },
+      ],
+      fields: 'userEnteredValue',
     },
   };
 
@@ -240,10 +261,18 @@ const formatBatchUpdateRequest = async (
     },
   };
 
+  const requests = dateCorrect
+    ? [updateCellsRequest]
+    : [
+        insertDimensionRequest,
+        updateDateCellRequest,
+        updateCellsRequest,
+      ];
+
   const finalRequest = {
     spreadsheetId,
     requestBody: {
-      requests: [insertDimensionRequest, updateCellsRequest],
+      requests,
     },
   };
 
@@ -259,12 +288,11 @@ app.post('/tracking/weight', async (req, res) => {
     auth: oAuth2Client,
   });
 
-  // Add formatted Date to inputs array for formatBatchUpdateRequest
-  const inputs = [formattedDate, ...req.body];
-
+  //* dateCorrect param false - force a new row and date - only 1 input perday max
   const weightBatchRequest = await formatBatchUpdateRequest(
-    inputs,
-    testWeightSheetOptions
+    [...req.body],
+    testWeightSheetOptions,
+    false
   );
 
   try {
@@ -285,29 +313,17 @@ app.post('/tracking/blood-pressure', async (req, res) => {
   });
 
   const { finalResultsArray, isDay } = req.body;
-  const timeOfDay = isDay ? 'AM' : 'PM';
   const finalSheetOptions = {
     sheetId: testBpSheetOptions.sheetId,
-    ...testBpSheetOptions[timeOfDay],
+    ...testBpSheetOptions[isDay ? 'AM' : 'PM'],
   };
   //TODO replace 'Sheet1' with correct sheetName
   const dateCorrect = await dateCheck(spreadsheetId, 'Sheet1');
 
-  let inputs: string | number[] = [];
-
-  if (!dateCorrect) {
-    inputs = [formattedDate, formattedTime, ...finalResultsArray];
-  } else if (dateCorrect) {
-    inputs = [formattedTime, ...finalResultsArray];
-  } else {
-    res.status(500).json({
-      message: 'Internal server error, dateCorrect is not bool',
-    });
-  }
-
   const bpBatchRequest = await formatBatchUpdateRequest(
-    inputs,
-    finalSheetOptions
+    [formattedTime, ...finalResultsArray],
+    finalSheetOptions,
+    dateCorrect
   );
 
   try {
