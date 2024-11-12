@@ -121,6 +121,28 @@ const bpSheetOptions = {
   },
 };
 
+const mealSheetOptions = {
+  sheetId: 427283826,
+  startRowIndex: 1,
+  endRowIndex: 2,
+  breakfast: {
+    startColumnIndex: 1,
+    endColumnIndex: 2,
+  },
+  lunch: {
+    startColumnIndex: 2,
+    endColumnIndex: 3,
+  },
+  dinner: {
+    startColumnIndex: 3,
+    endColumnIndex: 4,
+  },
+  snack: {
+    startColumnIndex: 4,
+    endColumnIndex: 5,
+  },
+};
+
 //! remove and replace with relevant sheetOptions later
 const testWeightSheetOptions = {
   sheetId: 306586463,
@@ -143,6 +165,28 @@ const testBpSheetOptions = {
     endRowIndex: 2,
     startColumnIndex: 5,
     endColumnIndex: 9,
+  },
+};
+
+const testMealSheetOptions = {
+  sheetId: 956974682,
+  startRowIndex: 1,
+  endRowIndex: 2,
+  breakfast: {
+    startColumnIndex: 1,
+    endColumnIndex: 2,
+  },
+  lunch: {
+    startColumnIndex: 2,
+    endColumnIndex: 3,
+  },
+  dinner: {
+    startColumnIndex: 3,
+    endColumnIndex: 4,
+  },
+  snack: {
+    startColumnIndex: 4,
+    endColumnIndex: 5,
   },
 };
 
@@ -339,6 +383,12 @@ app.post('/tracking/blood-pressure', async (req, res) => {
 });
 
 //* Meals
+app.post('/tracking/meals', async (req, res) => {
+  const sheets = google.sheets({
+    version: 'v4',
+    auth: oAuth2Client,
+  });
+});
 
 //* Initialize sheets - Goes in each route, avoid stale state etc
 // const sheets = google.sheets({
