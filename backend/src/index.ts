@@ -172,22 +172,13 @@ const testMealSheetOptions = {
   sheetId: 956974682,
   startRowIndex: 1,
   endRowIndex: 2,
-  breakfast: {
-    startColumnIndex: 1,
-    endColumnIndex: 2,
-  },
-  lunch: {
-    startColumnIndex: 2,
-    endColumnIndex: 3,
-  },
-  dinner: {
-    startColumnIndex: 3,
-    endColumnIndex: 4,
-  },
-  snack: {
-    startColumnIndex: 4,
-    endColumnIndex: 5,
-  },
+};
+
+const mealColumnRanges = {
+  breakfast: { startColumnIndex: 1, endColumnIndex: 2 },
+  lunch: { startColumnIndex: 2, endColumnIndex: 3 },
+  dinner: { startColumnIndex: 3, endColumnIndex: 4 },
+  snack: { startColumnIndex: 4, endColumnIndex: 5 },
 };
 
 //* Functions
@@ -388,13 +379,9 @@ app.post('/tracking/meals', async (req, res) => {
     version: 'v4',
     auth: oAuth2Client,
   });
-});
 
-//* Initialize sheets - Goes in each route, avoid stale state etc
-// const sheets = google.sheets({
-//   version: 'v4',
-//   auth: oAuth2Client,
-// });
+  const inputs = req.body;
+});
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
