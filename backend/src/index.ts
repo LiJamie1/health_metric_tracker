@@ -475,6 +475,16 @@ app.post('/tracking/blood-pressure', async (req, res) => {
 });
 
 //* Meals
+//! Using testMealSheetOptions
+//TODO Replace testMealSheetOptions
+//* Test - make update request with all filled
+//* Expcted Result - new row with date with all cells filled
+//* Reset - delete row
+//* Test - make another request with lunch/dinner as empty strings
+//* Expected result - new row with date with breakfast and snack cells filled
+//* Test - make another request with lunch/dinner filled, breakfast and snack as empty strings
+//* Expected result - no new row, breakfast and snack are the same from previous request,
+//*                   lunch and dinner now populated
 app.post('/tracking/meals', async (req, res) => {
   const sheets = google.sheets({
     version: 'v4',
