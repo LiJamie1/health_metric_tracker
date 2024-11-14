@@ -4,8 +4,6 @@ import cors from 'cors';
 import axios from 'axios';
 import { URLSearchParams } from 'url';
 import { google, sheets_v4 } from 'googleapis';
-import { error } from 'console';
-import { emitWarning } from 'process';
 
 dotenv.config();
 
@@ -14,6 +12,10 @@ const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
 
 //* Global Vars
 const currentDate: Date = new Date();
@@ -224,7 +226,7 @@ const dateCheck = async (
 
 // Function to generate a values array for sheets updateCells method
 //TODO At a later date refactor to allow formatting of cells
-const valuesFormatting = (inputs: (string | number)[]) => {
+const valuesFormattingArr = (inputs: (string | number)[]) => {
   return inputs
     .map((input) => {
       if (typeof input === 'string') {
@@ -238,9 +240,42 @@ const valuesFormatting = (inputs: (string | number)[]) => {
     .filter((value) => value !== null);
 };
 
-// Only used with batchUpdates for the following consecutive actions insert row above, insert data
+const valuesFormattingObj = (
+  inputs: { [key: string]: string },
+  mealColumnRanges: { [key: string]: { [key: string]: number } },
+  sheetOptions: Partial<SheetOption>
+) => {
+  const { sheetId, ...rangeOptions } = sheetOptions;
+  const filteredInputs = Object.keys(inputs)
+    .filter((key) => inputs[key] !== '')
+    .reduce(
+      (acc, key) => {
+        acc[key] = inputs[key];
+        return acc;
+      },
+      {} as { [key: string]: string }
+    );
+
+  return Object.keys(filteredInputs).map((key) => ({
+    updateCells: {
+      range: { sheetId, ...rangeOptions, ...mealColumnRanges[key] },
+      rows: [
+        {
+          values: [
+            {
+              userEnteredValue: { stringValue: filteredInputs[key] },
+            },
+          ],
+        },
+      ],
+      fields: 'userEnteredValue',
+    },
+  }));
+};
+
+//* batchUpdates for weight and blood pressure
 const formatBatchUpdateRequest = async (
-  inputs: (string | number)[],
+  inputsArr: (string | number)[],
   sheetOptions: SheetOption,
   dateCorrect: boolean
 ) => {
@@ -284,7 +319,7 @@ const formatBatchUpdateRequest = async (
       range: { sheetId, ...rangeOptions },
       rows: [
         {
-          values: valuesFormatting(inputs),
+          values: valuesFormattingArr(inputsArr),
         },
       ],
       fields: 'userEnteredValue',
@@ -297,6 +332,72 @@ const formatBatchUpdateRequest = async (
         insertDimensionRequest,
         updateDateCellRequest,
         updateCellsRequest,
+      ];
+
+  const finalRequest = {
+    spreadsheetId,
+    requestBody: {
+      requests,
+    },
+  };
+
+  return finalRequest;
+};
+
+//* batchUpdates for meals
+const formatMealBatchRequest = async (
+  inputsObj: { [key: string]: string },
+  sheetOptions: Partial<SheetOption>,
+  mealColumnRanges: { [key: string]: { [key: string]: number } },
+  dateCorrect: boolean
+) => {
+  const { sheetId } = sheetOptions;
+  const insertDimensionRequest = {
+    insertDimension: {
+      range: {
+        sheetId,
+        dimension: 'ROWS',
+        startIndex: 1,
+        endIndex: 2,
+      },
+      inheritFromBefore: true,
+    },
+  };
+
+  const updateDateCellRequest = {
+    updateCells: {
+      range: {
+        sheetId,
+        startRowIndex: 1,
+        endRowIndex: 2,
+        startColumnIndex: 0,
+        endColumnIndex: 1,
+      },
+      rows: [
+        {
+          values: [
+            {
+              userEnteredValue: { stringValue: formattedDate },
+            },
+          ],
+        },
+      ],
+      fields: 'userEnteredValue',
+    },
+  };
+
+  const updateCellsRequest = valuesFormattingObj(
+    inputsObj,
+    mealColumnRanges,
+    sheetOptions
+  );
+
+  const requests = dateCorrect
+    ? updateCellsRequest
+    : [
+        insertDimensionRequest,
+        updateDateCellRequest,
+        ...updateCellsRequest,
       ];
 
   const finalRequest = {
@@ -359,7 +460,7 @@ app.post('/tracking/blood-pressure', async (req, res) => {
   const dateCorrect = await dateCheck(spreadsheetId, 'Sheet1');
 
   const bpBatchRequest = await formatBatchUpdateRequest(
-    [formattedTime, ...finalResultsArray],
+    finalResultsArray,
     finalSheetOptions,
     dateCorrect
   );
@@ -369,7 +470,7 @@ app.post('/tracking/blood-pressure', async (req, res) => {
     res.status(200).send('Blood Pressure data updated successfully!');
   } catch (e: unknown) {
     console.error('Error during batch update', e);
-    res.status(500).send('Error updating weight data');
+    res.status(500).send('Error updating blood pressure data');
   }
 });
 
@@ -381,8 +482,22 @@ app.post('/tracking/meals', async (req, res) => {
   });
 
   const inputs = req.body;
-});
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  //TODO replace 'Sheet3' with correct sheetName
+  const dateCorrect = await dateCheck(spreadsheetId, 'Sheet3');
+
+  const mealsBatchRequest = await formatMealBatchRequest(
+    inputs,
+    testMealSheetOptions,
+    mealColumnRanges,
+    dateCorrect
+  );
+
+  try {
+    await sheets.spreadsheets.batchUpdate(mealsBatchRequest);
+    res.status(200).send('Meals data updated successfully!');
+  } catch (e: unknown) {
+    console.error('Error during batch update', e);
+    res.status(500).send('Error updating meals data');
+  }
 });
