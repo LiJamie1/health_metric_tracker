@@ -224,6 +224,46 @@ const dateCheck = async (
   }
 };
 
+const createInsertRowAndDateRequest = (
+  sheetId: number,
+  formattedDate: string
+) => {
+  return [
+    {
+      insertDimension: {
+        range: {
+          sheetId,
+          dimension: 'ROWS',
+          startIndex: 1,
+          endIndex: 2,
+        },
+        inheritFromBefore: true,
+      },
+    },
+    {
+      updateCells: {
+        range: {
+          sheetId,
+          startRowIndex: 1,
+          endRowIndex: 2,
+          startColumnIndex: 0,
+          endColumnIndex: 1,
+        },
+        rows: [
+          {
+            values: [
+              {
+                userEnteredValue: { stringValue: formattedDate },
+              },
+            ],
+          },
+        ],
+        fields: 'userEnteredValue',
+      },
+    },
+  ];
+};
+
 // Function to generate a values array for sheets updateCells method
 //TODO At a later date refactor to allow formatting of cells
 const valuesFormattingArr = (inputs: (string | number)[]) => {
@@ -280,39 +320,10 @@ const formatBatchUpdateRequest = async (
   dateCorrect: boolean
 ) => {
   const { sheetId, ...rangeOptions } = sheetOptions;
-  const insertDimensionRequest = {
-    insertDimension: {
-      range: {
-        sheetId,
-        dimension: 'ROWS',
-        startIndex: 1,
-        endIndex: 2,
-      },
-      inheritFromBefore: true,
-    },
-  };
-
-  const updateDateCellRequest = {
-    updateCells: {
-      range: {
-        sheetId,
-        startRowIndex: 1,
-        endRowIndex: 2,
-        startColumnIndex: 0,
-        endColumnIndex: 1,
-      },
-      rows: [
-        {
-          values: [
-            {
-              userEnteredValue: { stringValue: formattedDate },
-            },
-          ],
-        },
-      ],
-      fields: 'userEnteredValue',
-    },
-  };
+  const newRowAndDate = createInsertRowAndDateRequest(
+    sheetId,
+    formattedDate
+  );
 
   const updateCellsRequest = {
     updateCells: {
@@ -328,11 +339,7 @@ const formatBatchUpdateRequest = async (
 
   const requests = dateCorrect
     ? [updateCellsRequest]
-    : [
-        insertDimensionRequest,
-        updateDateCellRequest,
-        updateCellsRequest,
-      ];
+    : [...newRowAndDate, updateCellsRequest];
 
   const finalRequest = {
     spreadsheetId,
@@ -351,40 +358,15 @@ const formatMealBatchRequest = async (
   mealColumnRanges: { [key: string]: { [key: string]: number } },
   dateCorrect: boolean
 ) => {
-  const { sheetId } = sheetOptions;
-  const insertDimensionRequest = {
-    insertDimension: {
-      range: {
-        sheetId,
-        dimension: 'ROWS',
-        startIndex: 1,
-        endIndex: 2,
-      },
-      inheritFromBefore: true,
-    },
-  };
+  if (!sheetOptions.sheetId) {
+    throw new Error('sheetId is required in sheetOptions');
+  }
 
-  const updateDateCellRequest = {
-    updateCells: {
-      range: {
-        sheetId,
-        startRowIndex: 1,
-        endRowIndex: 2,
-        startColumnIndex: 0,
-        endColumnIndex: 1,
-      },
-      rows: [
-        {
-          values: [
-            {
-              userEnteredValue: { stringValue: formattedDate },
-            },
-          ],
-        },
-      ],
-      fields: 'userEnteredValue',
-    },
-  };
+  const { sheetId } = sheetOptions;
+  const newRowAndDate = createInsertRowAndDateRequest(
+    sheetId,
+    formattedDate
+  );
 
   const updateCellsRequest = valuesFormattingObj(
     inputsObj,
@@ -394,11 +376,7 @@ const formatMealBatchRequest = async (
 
   const requests = dateCorrect
     ? updateCellsRequest
-    : [
-        insertDimensionRequest,
-        updateDateCellRequest,
-        ...updateCellsRequest,
-      ];
+    : [...newRowAndDate, ...updateCellsRequest];
 
   const finalRequest = {
     spreadsheetId,
