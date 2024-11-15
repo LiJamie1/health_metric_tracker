@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import axios from 'axios';
 import { URLSearchParams } from 'url';
-import { google, sheets_v4 } from 'googleapis';
+import { google } from 'googleapis';
 
 dotenv.config();
 
@@ -127,22 +127,13 @@ const mealSheetOptions = {
   sheetId: 427283826,
   startRowIndex: 1,
   endRowIndex: 2,
-  breakfast: {
-    startColumnIndex: 1,
-    endColumnIndex: 2,
-  },
-  lunch: {
-    startColumnIndex: 2,
-    endColumnIndex: 3,
-  },
-  dinner: {
-    startColumnIndex: 3,
-    endColumnIndex: 4,
-  },
-  snack: {
-    startColumnIndex: 4,
-    endColumnIndex: 5,
-  },
+};
+
+const mealColumnRanges = {
+  breakfast: { startColumnIndex: 1, endColumnIndex: 2 },
+  lunch: { startColumnIndex: 2, endColumnIndex: 3 },
+  dinner: { startColumnIndex: 3, endColumnIndex: 4 },
+  snack: { startColumnIndex: 4, endColumnIndex: 5 },
 };
 
 //! remove and replace with relevant sheetOptions later
@@ -174,13 +165,6 @@ const testMealSheetOptions = {
   sheetId: 956974682,
   startRowIndex: 1,
   endRowIndex: 2,
-};
-
-const mealColumnRanges = {
-  breakfast: { startColumnIndex: 1, endColumnIndex: 2 },
-  lunch: { startColumnIndex: 2, endColumnIndex: 3 },
-  dinner: { startColumnIndex: 3, endColumnIndex: 4 },
-  snack: { startColumnIndex: 4, endColumnIndex: 5 },
 };
 
 //* Functions
@@ -264,8 +248,6 @@ const createInsertRowAndDateRequest = (
   ];
 };
 
-// Function to generate a values array for sheets updateCells method
-//TODO At a later date refactor to allow formatting of cells
 const valuesFormattingArr = (inputs: (string | number)[]) => {
   return inputs
     .map((input) => {
@@ -280,6 +262,7 @@ const valuesFormattingArr = (inputs: (string | number)[]) => {
     .filter((value) => value !== null);
 };
 
+//TODO At a later date refactor to allow formatting of cells, cell colours yellow
 const valuesFormattingObj = (
   inputs: { [key: string]: string },
   mealColumnRanges: { [key: string]: { [key: string]: number } },
