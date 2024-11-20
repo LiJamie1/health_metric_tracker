@@ -203,14 +203,63 @@ const dateCheck = async (
   } catch (e: unknown) {
     const errorMessage =
       e instanceof Error ? e.message : 'Unknown error';
-    console.log('dateCheck: Error occurred:', errorMessage);
+    console.error('dateCheck: Error occurred:', errorMessage);
     throw new Error(`Something went wrong: ${errorMessage}`);
+  }
+};
+
+const findDate = async (
+  spreadsheetId: string | undefined,
+  sheetName: string,
+  inputDate: string
+) => {
+  if (!spreadsheetId)
+    throw new Error('Spreadsheet ID is required, findDate function');
+
+  if (inputDate === '') return { dateFound: false, rowIndex: 0 };
+
+  const sheets = google.sheets({
+    version: 'v4',
+    auth: oAuth2Client,
+  });
+
+  try {
+    const { data } = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${sheetName}!A2:A16`,
+    });
+
+    const values = data.values;
+
+    if (!values)
+      throw new Error(
+        'Response Data Values invalid, findDate function'
+      );
+
+    if (values.length === 0 || values.every((row) => row[0] === ''))
+      return { dateFound: false, rowIndex: 0 };
+
+    const dateIndexFound = values
+      .map((row) => row[0])
+      .findIndex((cell) => cell === inputDate);
+
+    return {
+      dateFound: dateIndexFound !== -1,
+      rowIndex: dateIndexFound !== -1 ? dateIndexFound + 1 : 0,
+    };
+  } catch (e: unknown) {
+    const errorMessage =
+      e instanceof Error ? e.message : 'Unknown error';
+    console.error('findDate: Error occurred:', errorMessage);
+    throw new Error(
+      `Something went wrong in findDate: ${errorMessage}`
+    );
   }
 };
 
 const createInsertRowAndDateRequest = (
   sheetId: number,
-  formattedDate: string
+  dateString: string
 ) => {
   return [
     {
@@ -237,7 +286,7 @@ const createInsertRowAndDateRequest = (
           {
             values: [
               {
-                userEnteredValue: { stringValue: formattedDate },
+                userEnteredValue: { stringValue: dateString },
               },
             ],
           },
@@ -339,25 +388,28 @@ const formatMealBatchRequest = async (
   inputsObj: { [key: string]: string },
   sheetOptions: Partial<SheetOption>,
   mealColumnRanges: { [key: string]: { [key: string]: number } },
-  dateCorrect: boolean
+  dateFound: boolean
 ) => {
   if (!sheetOptions.sheetId) {
     throw new Error('sheetId is required in sheetOptions');
   }
 
   const { sheetId } = sheetOptions;
+  const { date, ...inputs } = inputsObj;
+  const dateString = date === '' ? formattedDate : date;
+
   const newRowAndDate = createInsertRowAndDateRequest(
     sheetId,
-    formattedDate
+    dateString
   );
 
   const updateCellsRequest = valuesFormattingObj(
-    inputsObj,
+    inputs,
     mealColumnRanges,
     sheetOptions
   );
 
-  const requests = dateCorrect
+  const requests = dateFound
     ? updateCellsRequest
     : [...newRowAndDate, ...updateCellsRequest];
 
@@ -382,9 +434,11 @@ app.post('/tracking/weight', async (req, res) => {
     auth: oAuth2Client,
   });
 
+  const inputs = [...req.body];
+
   //* dateCorrect param false - force a new row and date - only 1 input perday max
   const weightBatchRequest = await formatBatchUpdateRequest(
-    [...req.body],
+    inputs,
     testWeightSheetOptions,
     false
   );
@@ -421,7 +475,7 @@ app.post('/tracking/blood-pressure', async (req, res) => {
   const dateCorrect = await dateCheck(spreadsheetId, 'Sheet1');
 
   const bpBatchRequest = await formatBatchUpdateRequest(
-    finalResultsArray,
+    [formattedTime, ...finalResultsArray],
     finalSheetOptions,
     dateCorrect
   );
@@ -453,15 +507,32 @@ app.post('/tracking/meals', async (req, res) => {
   });
 
   const inputs = req.body;
+  const { date } = inputs;
 
   //TODO replace 'Sheet3' with correct sheetName
-  const dateCorrect = await dateCheck(spreadsheetId, 'Sheet3');
+  // const dateCorrect = await dateCheck(spreadsheetId, 'Sheet3');
+  const { dateFound, rowIndex } = await findDate(
+    spreadsheetId,
+    'Sheet3',
+    date
+  );
+
+  //TODO replace testMealSheetOptions with mealSheetOptions
+  const finalMealSheetOptions = {
+    ...testMealSheetOptions,
+    startRowIndex: dateFound
+      ? rowIndex
+      : testMealSheetOptions.startRowIndex,
+    endRowIndex: dateFound
+      ? rowIndex + 1
+      : testMealSheetOptions.endRowIndex,
+  };
 
   const mealsBatchRequest = await formatMealBatchRequest(
     inputs,
-    testMealSheetOptions,
+    finalMealSheetOptions,
     mealColumnRanges,
-    dateCorrect
+    dateFound
   );
 
   try {

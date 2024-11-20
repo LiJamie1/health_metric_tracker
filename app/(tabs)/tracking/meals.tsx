@@ -8,7 +8,17 @@ export default function Meals() {
   const localHost =
     'https://6701-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
 
+  const formattedDate: string = new Date().toLocaleDateString(
+    'en-GB',
+    {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+    }
+  );
+
   const [inputs, setInputs] = useState({
+    date: '',
     breakfast: '',
     lunch: '',
     dinner: '',
@@ -33,11 +43,15 @@ export default function Meals() {
           key={`${key}`}
           id={`${key}`}
           style={styles.input}
-          placeholder={`${key.charAt(0).toUpperCase() + key.slice(1)}`}
+          placeholder={
+            key === 'date'
+              ? `${formattedDate}`
+              : `${key.charAt(0).toUpperCase() + key.slice(1)}`
+          }
           onChangeText={(input) =>
             handleInputChange(key as keyof typeof inputs, input)
           }
-          placeholderTextColor="#000000"
+          placeholderTextColor="#5f6670"
         ></TextInput>
       );
     });
