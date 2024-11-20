@@ -297,6 +297,26 @@ const createInsertRowAndDateRequest = (
   ];
 };
 
+const sortDateCol = (sheetName: string) => {
+  return {
+    sortRange: {
+      range: {
+        sheetId: sheetName,
+        startRowIndex: 1,
+        endRowIndex: 32,
+        startColumnIndex: 0,
+        endColumnIndex: 1,
+      },
+      sortSpecs: [
+        {
+          dimensionIndex: 0,
+          sortOrder: 'DESCENDING',
+        },
+      ],
+    },
+  };
+};
+
 const valuesFormattingArr = (inputs: (string | number)[]) => {
   return inputs
     .map((input) => {
@@ -410,9 +430,20 @@ const formatMealBatchRequest = async (
     sheetOptions
   );
 
-  const requests = dateFound
-    ? updateCellsRequest
-    : [...newRowAndDate, ...updateCellsRequest];
+  let requests: any[] = [];
+
+  if (!dateFound && inputDate !== formattedDate) {
+    //TODO replace with sheetName when sheetOptions are updated with sheetName
+    requests = [
+      ...newRowAndDate,
+      ...updateCellsRequest,
+      sortDateCol('Sheet3'),
+    ];
+  } else if (dateFound) {
+    requests = [...updateCellsRequest];
+  } else if (!dateFound && inputDate === formattedDate) {
+    requests = [...newRowAndDate, ...updateCellsRequest];
+  }
 
   const finalRequest = {
     spreadsheetId,
