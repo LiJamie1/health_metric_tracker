@@ -90,7 +90,6 @@ app.post('/api/auth/google', async (req, res) => {
 });
 
 //* Sheet Options - range options for individual sheets
-//TODO Add sheetName to sheetOptions
 interface SheetOption {
   sheetId: number;
   startRowIndex: number;
@@ -297,24 +296,26 @@ const createInsertRowAndDateRequest = (
   ];
 };
 
-const sortDateCol = (sheetName: string) => {
-  return {
-    sortRange: {
-      range: {
-        sheetId: sheetName,
-        startRowIndex: 1,
-        endRowIndex: 32,
-        startColumnIndex: 0,
-        endColumnIndex: 1,
-      },
-      sortSpecs: [
-        {
-          dimensionIndex: 0,
-          sortOrder: 'DESCENDING',
+const sortDateCol = (sheetId: number) => {
+  return [
+    {
+      sortRange: {
+        range: {
+          sheetId: sheetId,
+          startRowIndex: 1,
+          endRowIndex: 32,
+          startColumnIndex: 0,
+          endColumnIndex: 1,
         },
-      ],
+        sortSpecs: [
+          {
+            dimensionIndex: 0,
+            sortOrder: 'DESCENDING',
+          },
+        ],
+      },
     },
-  };
+  ];
 };
 
 const valuesFormattingArr = (inputs: (string | number)[]) => {
@@ -331,7 +332,7 @@ const valuesFormattingArr = (inputs: (string | number)[]) => {
     .filter((value) => value !== null);
 };
 
-//TODO At a later date refactor to allow formatting of cells, cell colours yellow
+//TODO refactor to allow formatting
 const valuesFormattingObj = (
   inputs: { [key: string]: string },
   mealColumnRanges: { [key: string]: { [key: string]: number } },
@@ -404,7 +405,7 @@ const formatBatchUpdateRequest = async (
 };
 
 //* batchUpdates for meals
-//TODO add a sort request if inputDate !== currentDate && dateFound === false
+//TODO refactor to allow formatting
 const formatMealBatchRequest = async (
   inputsObj: { [key: string]: string },
   sheetOptions: Partial<SheetOption>,
@@ -416,8 +417,8 @@ const formatMealBatchRequest = async (
   }
 
   const { sheetId } = sheetOptions;
-  const { inputDate, ...inputs } = inputsObj;
-  const dateString = inputDate === '' ? formattedDate : inputDate;
+  const { date, ...inputs } = inputsObj;
+  const dateString = date === '' ? formattedDate : date;
 
   const newRowAndDate = createInsertRowAndDateRequest(
     sheetId,
@@ -430,20 +431,11 @@ const formatMealBatchRequest = async (
     sheetOptions
   );
 
-  let requests: any[] = [];
+  const sortRequest = sortDateCol(sheetId);
 
-  if (!dateFound && inputDate !== formattedDate) {
-    //TODO replace with sheetName when sheetOptions are updated with sheetName
-    requests = [
-      ...newRowAndDate,
-      ...updateCellsRequest,
-      sortDateCol('Sheet3'),
-    ];
-  } else if (dateFound) {
-    requests = [...updateCellsRequest];
-  } else if (!dateFound && inputDate === formattedDate) {
-    requests = [...newRowAndDate, ...updateCellsRequest];
-  }
+  const requests = dateFound
+    ? [...updateCellsRequest]
+    : [...newRowAndDate, ...updateCellsRequest, ...sortRequest];
 
   const finalRequest = {
     spreadsheetId,
