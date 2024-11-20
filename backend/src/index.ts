@@ -90,7 +90,7 @@ app.post('/api/auth/google', async (req, res) => {
 });
 
 //* Sheet Options - range options for individual sheets
-//TODO create meals sheetOptions
+//TODO Add sheetName to sheetOptions
 interface SheetOption {
   sheetId: number;
   startRowIndex: number;
@@ -384,6 +384,7 @@ const formatBatchUpdateRequest = async (
 };
 
 //* batchUpdates for meals
+//TODO add a sort request if inputDate !== currentDate && dateFound === false
 const formatMealBatchRequest = async (
   inputsObj: { [key: string]: string },
   sheetOptions: Partial<SheetOption>,
@@ -395,8 +396,8 @@ const formatMealBatchRequest = async (
   }
 
   const { sheetId } = sheetOptions;
-  const { date, ...inputs } = inputsObj;
-  const dateString = date === '' ? formattedDate : date;
+  const { inputDate, ...inputs } = inputsObj;
+  const dateString = inputDate === '' ? formattedDate : inputDate;
 
   const newRowAndDate = createInsertRowAndDateRequest(
     sheetId,
@@ -492,14 +493,20 @@ app.post('/tracking/blood-pressure', async (req, res) => {
 //* Meals
 //! Using testMealSheetOptions
 //TODO Replace testMealSheetOptions
-//* Test - make update request with all filled
-//* Expcted Result - new row with date with all cells filled
-//* Reset - delete row
-//* Test - make another request with lunch/dinner as empty strings
-//* Expected result - new row with date with breakfast and snack cells filled
-//* Test - make another request with lunch/dinner filled, breakfast and snack as empty strings
-//* Expected result - no new row, breakfast and snack are the same from previous request,
-//*                   lunch and dinner now populated
+//* Set Up - delete rows from previous tests
+//* Set Up - create a row and add a random past date in (dd/mm/yy) that is relatively close
+//*          eg. if current date is 20/11/24 put in 15/11/24
+//* Test - make update request with all but the date input filled
+//* Expcted Result - new row with current date and all relevant cells filled
+//* Test - make another request with lunch/dinner as empty strings with the previously set random date
+//* Expected Result - no new row, random date has breakfast and snack cells filled
+//* Test - make another request same date, lunch/dinner inputs filled, breakfast/snack inputs empty
+//* Expected Result - row with random date now has all cells filled
+//* Test - make another request with another random date, any or no inputs
+//*        eg. if 20/11/24 and 15/11/24 were used before, use 16/11/24
+//* Expected Result - new row with the date and relevant fields should be filled
+//*                   new row is sorted to be inbetween the 15th and 20th
+//*                   top to bottom should be 20th, 16th, 15th
 app.post('/tracking/meals', async (req, res) => {
   const sheets = google.sheets({
     version: 'v4',
