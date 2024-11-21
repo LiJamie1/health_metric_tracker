@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Button, TextInput } from 'react-native';
+import { Button, Pressable, TextInput } from 'react-native';
 import { ThemedView } from 'src/components/ThemedView';
 import styles from 'src/constants/Styling';
 import axios from 'axios';
+import { ThemedText } from '@/src/components/ThemedText';
 
 export default function Meals() {
   const localHost =
@@ -25,10 +26,18 @@ export default function Meals() {
     snack: '',
   });
 
+  const [formatOptions, setFormatOptions] = useState({
+    breakfast: false,
+    lunch: false,
+    dinner: false,
+    snack: false,
+  });
+
   const handleInputChange = (
     id: keyof typeof inputs,
     input: string
   ) => {
+    console.log(formatOptions);
     setInputs((prevInputs) => {
       const newInputs = { ...prevInputs };
       newInputs[id] = input;
@@ -36,23 +45,56 @@ export default function Meals() {
     });
   };
 
+  const onFormatPress = (key: keyof typeof formatOptions) => {
+    setFormatOptions((prevFormatOptions) => {
+      let newFormatOptions = { ...prevFormatOptions };
+      newFormatOptions[key] = !newFormatOptions[key];
+      return newFormatOptions;
+    });
+  };
+
+  //TODO add formatting option
   const generateInputFields = () => {
     return Object.entries(inputs).map(([key, values]) => {
+      const formatKey = `${key}` as keyof typeof formatOptions;
+      const containerStyle =
+        key === 'date' ? {} : styles.mealSideBySideContainer;
+      const inputStyle =
+        key === 'date' ? styles.input : styles.mealInput;
+      const placeholderText =
+        key === 'date'
+          ? formattedDate
+          : `${key.charAt(0).toUpperCase() + key.slice(1)}`;
+
       return (
-        <TextInput
-          key={`${key}`}
-          id={`${key}`}
-          style={styles.input}
-          placeholder={
-            key === 'date'
-              ? `${formattedDate}`
-              : `${key.charAt(0).toUpperCase() + key.slice(1)}`
-          }
-          onChangeText={(input) =>
-            handleInputChange(key as keyof typeof inputs, input)
-          }
-          placeholderTextColor="#5f6670"
-        ></TextInput>
+        <ThemedView style={containerStyle} key={key}>
+          <TextInput
+            id={key}
+            style={inputStyle}
+            placeholder={placeholderText}
+            onChangeText={(input) =>
+              handleInputChange(key as keyof typeof inputs, input)
+            } // No need for `${key}`
+            placeholderTextColor="#5f6670"
+          />
+          {key !== 'date' && (
+            <Pressable
+              style={{
+                ...styles.mealButton,
+                backgroundColor: formatOptions[formatKey]
+                  ? '#63646a'
+                  : '#414246',
+              }}
+              onPress={() =>
+                onFormatPress(key as keyof typeof formatOptions)
+              }
+            >
+              <ThemedText>
+                {formatOptions[formatKey] ? 'Out' : 'Home'}
+              </ThemedText>
+            </Pressable>
+          )}
+        </ThemedView>
       );
     });
   };
@@ -75,6 +117,10 @@ export default function Meals() {
           key="mealsSubmit"
           title="Submit"
           onPress={submitInput}
+        />
+        <Button
+          title="test"
+          onPress={() => console.log(formatOptions)}
         />
       </ThemedView>
     </ThemedView>

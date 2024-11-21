@@ -33,6 +33,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#faf7f5',
     color: '#000000',
   },
+  mealInput: {
+    height: 40,
+    width: '70%',
+    borderWidth: 1,
+    padding: 10,
+    backgroundColor: '#faf7f5',
+    color: '#000000',
+  },
+  mealButton: {
+    height: 40,
+    width: 80,
+    paddingHorizontal: 16,
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mealSideBySideContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
 });
 
 export default styles;
