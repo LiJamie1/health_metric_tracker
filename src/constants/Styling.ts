@@ -15,7 +15,6 @@ const styles = StyleSheet.create({
   input: {
     height: 40,
     width: '100%',
-    borderWidth: 1,
     padding: 10,
     backgroundColor: '#faf7f5',
     color: '#000000',
@@ -28,7 +27,7 @@ const styles = StyleSheet.create({
   sideBySideInputs: {
     flex: 1,
     height: 40,
-    borderWidth: 1,
+    borderWidth: 0.5,
     paddingLeft: 10,
     backgroundColor: '#faf7f5',
     color: '#000000',
