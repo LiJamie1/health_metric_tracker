@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button, Pressable, TextInput } from 'react-native';
 import { ThemedView } from 'src/components/ThemedView';
+import { ThemedText } from '@/src/components/ThemedText';
 import styles from 'src/constants/Styling';
 import axios from 'axios';
-import { ThemedText } from '@/src/components/ThemedText';
 
 export default function Meals() {
   const localHost =
@@ -53,18 +53,25 @@ export default function Meals() {
     });
   };
 
-  //TODO add formatting option
   const generateInputFields = () => {
     return Object.entries(inputs).map(([key, values]) => {
-      const formatKey = `${key}` as keyof typeof formatOptions;
-      const containerStyle =
-        key === 'date' ? {} : styles.mealSideBySideContainer;
-      const inputStyle =
-        key === 'date' ? styles.input : styles.mealInput;
-      const placeholderText =
-        key === 'date'
-          ? formattedDate
-          : `${key.charAt(0).toUpperCase() + key.slice(1)}`;
+      const formatKey = key as keyof typeof formatOptions;
+
+      const isDateKey = key === 'date';
+      const containerStyle = isDateKey
+        ? {}
+        : styles.mealSideBySideContainer;
+      const inputStyle = isDateKey ? styles.input : styles.mealInput;
+      const placeholderText = isDateKey
+        ? formattedDate
+        : `${key.charAt(0).toUpperCase() + key.slice(1)}`;
+
+      const buttonStyle = {
+        ...styles.mealButton,
+        backgroundColor: formatOptions[formatKey]
+          ? '#63646a'
+          : '#414246',
+      };
 
       return (
         <ThemedView style={containerStyle} key={key}>
@@ -74,20 +81,13 @@ export default function Meals() {
             placeholder={placeholderText}
             onChangeText={(input) =>
               handleInputChange(key as keyof typeof inputs, input)
-            } // No need for `${key}`
+            }
             placeholderTextColor="#5f6670"
           />
-          {key !== 'date' && (
+          {!isDateKey && (
             <Pressable
-              style={{
-                ...styles.mealButton,
-                backgroundColor: formatOptions[formatKey]
-                  ? '#63646a'
-                  : '#414246',
-              }}
-              onPress={() =>
-                onFormatPress(key as keyof typeof formatOptions)
-              }
+              style={buttonStyle}
+              onPress={() => onFormatPress(formatKey)}
             >
               <ThemedText>
                 {formatOptions[formatKey] ? 'Out' : 'Home'}

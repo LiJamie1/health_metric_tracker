@@ -36,16 +36,18 @@ export default function BloodPressure() {
   const generateInputFields = () => {
     return Object.entries(inputs).map(([key, values]) => {
       const displayKey = key.charAt(0).toUpperCase() + key.slice(1);
+
       return (
         <ThemedView key={`${key}Container`}>
           <ThemedText key={`${key}Subtitle`}>{displayKey}</ThemedText>
+
           <ThemedView
             key={`${key}Inputs`}
             style={styles.sideBySideInputsContainer}
           >
             {values.map((value, index) => (
               <TextInput
-                key={`${key}${index}key`}
+                key={`${key}${index}`}
                 id={`${key}${index}`}
                 style={styles.sideBySideInputs}
                 onChangeText={(input) =>
