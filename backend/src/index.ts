@@ -4,6 +4,14 @@ import cors from 'cors';
 import axios from 'axios';
 import { URLSearchParams } from 'url';
 import { google } from 'googleapis';
+import { valuesFormattingObj } from './functions/valuesFormattingObj';
+import {
+  testWeightSheetOptions,
+  testBpSheetOptions,
+  testMealSheetOptions,
+  mealColumnRanges,
+} from './constants';
+import { SheetOption } from './interfaces';
 
 dotenv.config();
 
@@ -88,83 +96,6 @@ app.post('/api/auth/google', async (req, res) => {
     });
   }
 });
-
-//* Sheet Options - range options for individual sheets
-interface SheetOption {
-  sheetId: number;
-  startRowIndex: number;
-  endRowIndex: number;
-  startColumnIndex: number;
-  endColumnIndex: number;
-}
-
-const weightSheetOptions = {
-  sheetId: 1606005094,
-  startRowIndex: 1,
-  endRowIndex: 2,
-  startColumnIndex: 1,
-  endColumnIndex: 3,
-};
-
-const bpSheetOptions = {
-  sheetId: 2094284245,
-  AM: {
-    startRowIndex: 1,
-    endRowIndex: 2,
-    startColumnIndex: 1,
-    endColumnIndex: 5,
-  },
-  PM: {
-    startRowIndex: 1,
-    endRowIndex: 2,
-    startColumnIndex: 5,
-    endColumnIndex: 9,
-  },
-};
-
-const mealSheetOptions = {
-  sheetId: 427283826,
-  startRowIndex: 1,
-  endRowIndex: 2,
-};
-
-const mealColumnRanges = {
-  breakfast: { startColumnIndex: 1, endColumnIndex: 2 },
-  lunch: { startColumnIndex: 2, endColumnIndex: 3 },
-  dinner: { startColumnIndex: 3, endColumnIndex: 4 },
-  snack: { startColumnIndex: 4, endColumnIndex: 5 },
-};
-
-//! remove and replace with relevant sheetOptions later
-const testWeightSheetOptions = {
-  sheetId: 306586463,
-  startRowIndex: 1,
-  endRowIndex: 2,
-  startColumnIndex: 1,
-  endColumnIndex: 3,
-};
-
-const testBpSheetOptions = {
-  sheetId: 0,
-  AM: {
-    startRowIndex: 1,
-    endRowIndex: 2,
-    startColumnIndex: 1,
-    endColumnIndex: 5,
-  },
-  PM: {
-    startRowIndex: 1,
-    endRowIndex: 2,
-    startColumnIndex: 5,
-    endColumnIndex: 9,
-  },
-};
-
-const testMealSheetOptions = {
-  sheetId: 956974682,
-  startRowIndex: 1,
-  endRowIndex: 2,
-};
 
 //* Functions
 const dateCheck = async (
@@ -330,40 +261,6 @@ const valuesFormattingArr = (inputs: (string | number)[]) => {
       }
     })
     .filter((value) => value !== null);
-};
-
-//TODO refactor to allow formatting
-const valuesFormattingObj = (
-  inputs: { [key: string]: string },
-  mealColumnRanges: { [key: string]: { [key: string]: number } },
-  sheetOptions: Partial<SheetOption>
-) => {
-  const { sheetId, ...rangeOptions } = sheetOptions;
-  const filteredInputs = Object.keys(inputs)
-    .filter((key) => inputs[key] !== '')
-    .reduce(
-      (acc, key) => {
-        acc[key] = inputs[key];
-        return acc;
-      },
-      {} as { [key: string]: string }
-    );
-
-  return Object.keys(filteredInputs).map((key) => ({
-    updateCells: {
-      range: { sheetId, ...rangeOptions, ...mealColumnRanges[key] },
-      rows: [
-        {
-          values: [
-            {
-              userEnteredValue: { stringValue: filteredInputs[key] },
-            },
-          ],
-        },
-      ],
-      fields: 'userEnteredValue',
-    },
-  }));
 };
 
 //* batchUpdates for weight and blood pressure
@@ -536,6 +433,8 @@ app.post('/tracking/meals', async (req, res) => {
     auth: oAuth2Client,
   });
 
+  console.log('post meals');
+
   const inputs = req.body;
   const { date } = inputs;
 
@@ -558,6 +457,7 @@ app.post('/tracking/meals', async (req, res) => {
       : testMealSheetOptions.endRowIndex,
   };
 
+  console.log('formatMealBatchRequest');
   const mealsBatchRequest = await formatMealBatchRequest(
     inputs,
     finalMealSheetOptions,
@@ -565,7 +465,10 @@ app.post('/tracking/meals', async (req, res) => {
     dateFound
   );
 
+  console.log(JSON.stringify(mealsBatchRequest));
+
   try {
+    console.log('meal batchUpdate');
     await sheets.spreadsheets.batchUpdate(mealsBatchRequest);
     res.status(200).send('Meals data updated successfully!');
   } catch (e: unknown) {

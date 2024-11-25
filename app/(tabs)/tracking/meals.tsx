@@ -37,7 +37,6 @@ export default function Meals() {
     id: keyof typeof inputs,
     input: string
   ) => {
-    console.log(formatOptions);
     setInputs((prevInputs) => {
       const newInputs = { ...prevInputs };
       newInputs[id] = input;
