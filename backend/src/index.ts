@@ -4,12 +4,19 @@ import cors from 'cors';
 import axios from 'axios';
 import { URLSearchParams } from 'url';
 import { google } from 'googleapis';
-import { valuesFormattingObj } from './functions/valuesFormattingObj';
+import {
+  valuesFormattingObj,
+  valuesFormattingArr,
+  sortDateCol,
+  createInsertRowAndDateRequest,
+} from './functions';
 import {
   testWeightSheetOptions,
   testBpSheetOptions,
   testMealSheetOptions,
   mealColumnRanges,
+  formattedDate,
+  formattedTime,
 } from './constants';
 import { SheetOption } from './interfaces';
 
@@ -25,29 +32,12 @@ app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
 
-//* Global Vars
-const currentDate: Date = new Date();
-const formattedDate: string = currentDate.toLocaleDateString(
-  'en-GB',
-  {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-  }
-);
-const localTime: string = currentDate.toLocaleTimeString([], {
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: true,
-});
-//TODO Remove dayPeriod if left unused
-const [formattedTime, dayPeriod] = localTime.split(' ');
-
-const client_id = process.env.CLIENT_ID!;
-const client_secret = process.env.CLIENT_SECRET!;
-const redirect_uri = 'http://localhost:5000/api/auth/google';
+//* Env Vars
+export const client_id = process.env.CLIENT_ID!;
+export const client_secret = process.env.CLIENT_SECRET!;
+export const redirect_uri = 'http://localhost:5000/api/auth/google';
 //! change to use actual spreadsheet later
-const spreadsheetId = process.env.TEST_SPREADSHEET_ID;
+export const spreadsheetId = process.env.TEST_SPREADSHEET_ID;
 
 //* OAuth
 const oAuth2Client = new google.auth.OAuth2(
@@ -185,82 +175,6 @@ const findDate = async (
       `Something went wrong in findDate: ${errorMessage}`
     );
   }
-};
-
-const createInsertRowAndDateRequest = (
-  sheetId: number,
-  dateString: string
-) => {
-  return [
-    {
-      insertDimension: {
-        range: {
-          sheetId,
-          dimension: 'ROWS',
-          startIndex: 1,
-          endIndex: 2,
-        },
-        inheritFromBefore: true,
-      },
-    },
-    {
-      updateCells: {
-        range: {
-          sheetId,
-          startRowIndex: 1,
-          endRowIndex: 2,
-          startColumnIndex: 0,
-          endColumnIndex: 1,
-        },
-        rows: [
-          {
-            values: [
-              {
-                userEnteredValue: { stringValue: dateString },
-              },
-            ],
-          },
-        ],
-        fields: 'userEnteredValue',
-      },
-    },
-  ];
-};
-
-const sortDateCol = (sheetId: number) => {
-  return [
-    {
-      sortRange: {
-        range: {
-          sheetId: sheetId,
-          startRowIndex: 1,
-          endRowIndex: 32,
-          startColumnIndex: 0,
-          endColumnIndex: 1,
-        },
-        sortSpecs: [
-          {
-            dimensionIndex: 0,
-            sortOrder: 'DESCENDING',
-          },
-        ],
-      },
-    },
-  ];
-};
-
-const valuesFormattingArr = (inputs: (string | number)[]) => {
-  return inputs
-    .map((input) => {
-      if (typeof input === 'string') {
-        return { userEnteredValue: { stringValue: input } };
-      } else if (typeof input === 'number') {
-        return { userEnteredValue: { numberValue: input } };
-      } else {
-        return null;
-      }
-    })
-    .filter((value) => value !== null);
 };
 
 //* batchUpdates for weight and blood pressure
@@ -437,7 +351,6 @@ app.post('/tracking/meals', async (req, res) => {
   const { date } = inputs;
 
   //TODO replace 'Sheet3' with correct sheetName
-  // const dateCorrect = await dateCheck(spreadsheetId, 'Sheet3');
   const { dateFound, rowIndex } = await findDate(
     spreadsheetId,
     'Sheet3',
@@ -455,7 +368,6 @@ app.post('/tracking/meals', async (req, res) => {
       : testMealSheetOptions.endRowIndex,
   };
 
-  console.log('formatMealBatchRequest');
   const mealsBatchRequest = await formatMealBatchRequest(
     inputs,
     finalMealSheetOptions,
