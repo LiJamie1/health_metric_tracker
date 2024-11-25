@@ -433,8 +433,6 @@ app.post('/tracking/meals', async (req, res) => {
     auth: oAuth2Client,
   });
 
-  console.log('post meals');
-
   const inputs = req.body;
   const { date } = inputs;
 
@@ -465,10 +463,7 @@ app.post('/tracking/meals', async (req, res) => {
     dateFound
   );
 
-  console.log(JSON.stringify(mealsBatchRequest));
-
   try {
-    console.log('meal batchUpdate');
     await sheets.spreadsheets.batchUpdate(mealsBatchRequest);
     res.status(200).send('Meals data updated successfully!');
   } catch (e: unknown) {

@@ -7,7 +7,6 @@ export function valuesFormattingObj(
   mealColumnRanges: { [key: string]: { [key: string]: number } },
   sheetOptions: Partial<SheetOption>
 ) {
-  console.log('valuesFormattingObj');
   const { sheetId, ...rangeOptions } = sheetOptions;
   const filteredInputs = Object.keys(inputs)
     .filter((key) => inputs[key] !== '')
@@ -18,8 +17,6 @@ export function valuesFormattingObj(
       },
       {} as { [key: string]: string }
     );
-
-  console.log('filteredInputs', filteredInputs);
 
   return Object.keys(filteredInputs).map((key) => ({
     updateCells: {
