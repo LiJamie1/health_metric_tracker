@@ -9,7 +9,7 @@ export default function Weight() {
   const localHost =
     'https://f384-2604-3d08-517d-c600-a97a-e426-e0d5-da5c.ngrok-free.app';
 
-  const [inputs, setInputs] = useState<any[]>([0, 0]);
+  const [inputs, setInputs] = useState<number[]>([0, 0]);
 
   const handleInputChange = (
     id: 'lbs' | 'fatPercentage',
@@ -18,7 +18,7 @@ export default function Weight() {
     const index = id === 'lbs' ? 0 : 1;
     setInputs((prevInputs) => {
       const newInputs = [...prevInputs];
-      newInputs[index] = parseFloat(input);
+      newInputs[index] = input === '' ? 0 : parseFloat(input);
       return newInputs;
     });
   };
@@ -26,10 +26,15 @@ export default function Weight() {
   const submitInputArray = async () => {
     try {
       await axios.post(`${localHost}/tracking/weight`, inputs);
+      setInputs([0, 0]);
     } catch (e: unknown) {
       console.error('submitInputArray:', e);
     }
   };
+
+  const isSubmitDisabled = !inputs.some(
+    (value) => value !== 0 || isNaN(value)
+  );
 
   //TODO Add keys to components
   return (
@@ -56,7 +61,11 @@ export default function Weight() {
           }
           placeholderTextColor="#000000"
         ></TextInput>
-        <Button title="Submit" onPress={submitInputArray} />
+        <Button
+          title="Submit"
+          onPress={submitInputArray}
+          disabled={isSubmitDisabled}
+        />
       </ThemedView>
     </ThemedView>
   );

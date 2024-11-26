@@ -16,6 +16,8 @@ const router = express.Router();
 //* Expected Result - Sheet 1 has a new row, date and cells F2-I2 are filled while B2-E2 are empty
 //* Test - make another request where day is toggled
 //* Expected Result - Sheet 1 cells B2-E2 which were previously empty are now filled
+//* Test - change the values and make another request where day is toggled
+//* Expected Result - Sheet 1 cells B2-E2 should have changed to new values
 router.post(
   '/tracking/blood-pressure',
   async (req: Request, res: Response) => {

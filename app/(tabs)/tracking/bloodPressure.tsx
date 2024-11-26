@@ -12,7 +12,7 @@ export default function BloodPressure() {
   const [isDay, setIsDay] = useState<boolean>(true);
 
   const toggleOnPress = () => {
-    setIsDay((prevIsDay) => !isDay);
+    setIsDay(() => !isDay);
   };
 
   const [inputs, setInputs] = useState({
@@ -28,10 +28,14 @@ export default function BloodPressure() {
   ) => {
     setInputs((prevInputs) => {
       const newInputs = { ...prevInputs };
-      newInputs[id][index] = parseFloat(input);
+      newInputs[id][index] = input === '' ? 0 : parseFloat(input);
       return newInputs;
     });
   };
+
+  const isSubmitDisabled = Object.values(inputs).some((array) =>
+    array.some((value) => value === 0 || isNaN(value))
+  );
 
   const generateInputFields = () => {
     return Object.entries(inputs).map(([key, values]) => {
@@ -83,6 +87,11 @@ export default function BloodPressure() {
         finalResultsArray,
         isDay,
       });
+      setInputs({
+        systolic: [0, 0, 0],
+        diastolic: [0, 0, 0],
+        pulse: [0, 0, 0],
+      });
     } catch (e: unknown) {
       console.error('submitResultsArray', e);
     }
@@ -102,6 +111,7 @@ export default function BloodPressure() {
           key="bpSubmit"
           title="Submit"
           onPress={submitResultsArray}
+          disabled={isSubmitDisabled}
         />
       </ThemedView>
     </ThemedView>

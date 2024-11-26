@@ -10,8 +10,6 @@ export async function findDate(
   if (!spreadsheetId)
     throw new Error('Spreadsheet ID is required, findDate function');
 
-  if (inputDate === '') return { dateFound: false, rowIndex: 0 };
-
   const sheets = google.sheets({
     version: 'v4',
     auth: oAuth2Client,

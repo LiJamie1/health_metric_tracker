@@ -19,7 +19,7 @@ export default function Meals() {
   );
 
   const [inputs, setInputs] = useState({
-    date: '',
+    date: formattedDate,
     breakfast: '',
     lunch: '',
     dinner: '',
@@ -55,16 +55,15 @@ export default function Meals() {
   const generateInputFields = () => {
     return Object.entries(inputs).map(([key, values]) => {
       const formatKey = key as keyof typeof formatOptions;
-
+      const value = values;
       const isDateKey = key === 'date';
       const containerStyle = isDateKey
         ? {}
         : styles.mealSideBySideContainer;
       const inputStyle = isDateKey ? styles.input : styles.mealInput;
       const placeholderText = isDateKey
-        ? formattedDate
+        ? values
         : `${key.charAt(0).toUpperCase() + key.slice(1)}`;
-
       const buttonStyle = {
         ...styles.mealButton,
         backgroundColor: formatOptions[formatKey]
@@ -78,6 +77,7 @@ export default function Meals() {
             id={key}
             style={inputStyle}
             placeholder={placeholderText}
+            value={value}
             onChangeText={(input) =>
               handleInputChange(key as keyof typeof inputs, input)
             }
@@ -103,10 +103,27 @@ export default function Meals() {
       await axios.post(`${localHost}/tracking/meals`, {
         ...inputs,
       });
+      setInputs({
+        date: formattedDate,
+        breakfast: '',
+        lunch: '',
+        dinner: '',
+        snack: '',
+      });
+      setFormatOptions({
+        breakfast: false,
+        lunch: false,
+        dinner: false,
+        snack: false,
+      });
     } catch (e: unknown) {
       console.error('submitInput', e);
     }
   };
+
+  const isSubmitDisabled = !Object.values(inputs)
+    .slice(1)
+    .some((value) => value !== '');
 
   return (
     <ThemedView style={styles.container}>
@@ -116,10 +133,7 @@ export default function Meals() {
           key="mealsSubmit"
           title="Submit"
           onPress={submitInput}
-        />
-        <Button
-          title="test"
-          onPress={() => console.log(formatOptions)}
+          disabled={isSubmitDisabled}
         />
       </ThemedView>
     </ThemedView>
