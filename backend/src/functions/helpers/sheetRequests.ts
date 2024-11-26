@@ -68,7 +68,6 @@ export function sortDateCol(sheetId: number) {
   ];
 }
 
-//TODO rename later to be more descriptive/readable
 export function formatValues(inputs: (string | number)[]) {
   return inputs
     .map((input) => {
@@ -84,7 +83,6 @@ export function formatValues(inputs: (string | number)[]) {
 }
 
 //TODO refactor to allow formatting
-//TODO rename later to be more descriptive/readable
 export function formatMealValues(
   inputs: { [key: string]: string },
   mealColumnRanges: { [key: string]: { [key: string]: number } },

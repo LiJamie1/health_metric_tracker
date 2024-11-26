@@ -7,9 +7,11 @@ import { createBatchUpdateRequest } from '../functions';
 const router = express.Router();
 
 //! Using testWeightSheetOptions
-//TODO Replace testWeightSheetOptions
-//TODO Current behaviour - force create new row on entry
-//TODO Fix - use findDate to instead overwrite data if date is found
+//! Bug - adds new rows
+//TODO Current behaviour - adds new rows with each submission
+//TODO Unexpected result - creates multiple rows with the same date if called multiple times
+//TODO Fix - properly integrate findDate to stop this behaviour
+//TODO Expected outcome - replace data instead of creating new row if date is found
 //* Test - make a request to record data
 //* Expected Result - Sheet 2 has new row with date, lbs and f% data
 //* Test - make new request to record data
