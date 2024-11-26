@@ -1,3 +1,3 @@
-export { formatBatchUpdateRequest } from './formatBatchUpdateRequest';
-export { formatMealBatchRequest } from './formatMealBatchRequest';
+export { createBatchUpdateRequest } from './createBatchUpdateRequest';
+export { createMealBatchRequest } from './createMealBatchRequest';
 export { findDate } from './findDate';

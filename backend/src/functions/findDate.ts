@@ -18,6 +18,9 @@ export async function findDate(
   });
 
   try {
+    //* !A2:A16 limited to cells A2 - A16 spanning 2 weeks
+    //* increase or decrease search radius by changing A16 to AX
+    //* where X = desired cell number + 1
     const { data } = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: `${sheetName}!A2:A16`,
@@ -25,6 +28,7 @@ export async function findDate(
 
     const values = data.values;
 
+    //* validation that values is not empty
     if (!values)
       throw new Error(
         'Response Data Values invalid, findDate function'
@@ -33,6 +37,7 @@ export async function findDate(
     if (values.length === 0 || values.every((row) => row[0] === ''))
       return { dateFound: false, rowIndex: 0 };
 
+    //* logic to manipulate values into output
     const dateIndexFound = values
       .map((row) => row[0])
       .findIndex((cell) => cell === inputDate);

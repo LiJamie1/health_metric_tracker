@@ -5,10 +5,11 @@ import axios from 'axios';
 import { URLSearchParams } from 'url';
 import { google } from 'googleapis';
 import {
-  formatBatchUpdateRequest,
-  formatMealBatchRequest,
+  createBatchUpdateRequest,
+  createMealBatchRequest,
   findDate,
 } from './functions';
+//TODO Update test to actual sheets
 import {
   testWeightSheetOptions,
   testBpSheetOptions,
@@ -101,7 +102,7 @@ app.post('/tracking/weight', async (req, res) => {
   //* dateCorrect param false - force a new row and date
   //* realistically this route is only used once a day max standardizing data
   //* ie. checked twice a week on wednesday and sunday at 9am
-  const weightBatchRequest = await formatBatchUpdateRequest(
+  const weightBatchRequest = await createBatchUpdateRequest(
     inputs,
     spreadsheetId,
     testWeightSheetOptions,
@@ -144,7 +145,7 @@ app.post('/tracking/blood-pressure', async (req, res) => {
     oAuth2Client
   );
 
-  const bpBatchRequest = await formatBatchUpdateRequest(
+  const bpBatchRequest = await createBatchUpdateRequest(
     [formattedTime, ...finalResultsArray],
     spreadsheetId,
     finalSheetOptions,
@@ -205,7 +206,7 @@ app.post('/tracking/meals', async (req, res) => {
       : testMealSheetOptions.endRowIndex,
   };
 
-  const mealsBatchRequest = await formatMealBatchRequest(
+  const mealsBatchRequest = await createMealBatchRequest(
     inputs,
     spreadsheetId,
     finalMealSheetOptions,

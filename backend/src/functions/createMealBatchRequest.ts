@@ -1,11 +1,13 @@
 import { formattedDate } from '../constants';
 import { SheetOption } from '../interfaces';
-import { createInsertRowAndDateRequest } from './createInsertRowAndDateRequest';
-import { sortDateCol } from './sortDateCol';
-import { valuesFormattingObj } from './valuesFormattingObj';
+import {
+  formatMealValues,
+  insertRowWithDate,
+  sortDateCol,
+} from './helpers/sheetRequests';
 
-export async function formatMealBatchRequest(
-  inputsObj: { [key: string]: string },
+export async function createMealBatchRequest(
+  { date, ...inputs }: { [key: string]: string },
   spreadsheetId: string,
   sheetOptions: Partial<SheetOption>,
   mealColumnRanges: { [key: string]: { [key: string]: number } },
@@ -16,25 +18,21 @@ export async function formatMealBatchRequest(
   }
 
   const { sheetId } = sheetOptions;
-  const { date, ...inputs } = inputsObj;
   const dateString = date === '' ? formattedDate : date;
 
-  const newRowAndDate = createInsertRowAndDateRequest(
-    sheetId,
-    dateString
-  );
-
-  const updateCellsRequest = valuesFormattingObj(
+  const updateCellsRequest = formatMealValues(
     inputs,
     mealColumnRanges,
     sheetOptions
   );
 
-  const sortRequest = sortDateCol(sheetId);
-
   const requests = dateFound
     ? [...updateCellsRequest]
-    : [...newRowAndDate, ...updateCellsRequest, ...sortRequest];
+    : [
+        ...insertRowWithDate(sheetId, dateString),
+        ...updateCellsRequest,
+        ...sortDateCol(sheetId),
+      ];
 
   const finalRequest = {
     spreadsheetId,

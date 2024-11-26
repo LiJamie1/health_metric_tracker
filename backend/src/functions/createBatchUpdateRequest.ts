@@ -1,10 +1,12 @@
 import { formattedDate } from '../constants';
 import { SheetOption } from '../interfaces';
-import { createInsertRowAndDateRequest } from './createInsertRowAndDateRequest';
-import { valuesFormattingArr } from './valuesFormattingArr';
+import {
+  insertRowWithDate,
+  formatValues,
+} from './helpers/sheetRequests';
 
-export async function formatBatchUpdateRequest(
-  inputsArr: (string | number)[],
+export async function createBatchUpdateRequest(
+  userInputs: (string | number)[],
   spreadsheetId: string,
   { sheetId, ...rangeOptions }: SheetOption,
   dateFound: boolean
@@ -14,7 +16,7 @@ export async function formatBatchUpdateRequest(
       range: { sheetId, ...rangeOptions },
       rows: [
         {
-          values: valuesFormattingArr(inputsArr),
+          values: formatValues(userInputs),
         },
       ],
       fields: 'userEnteredValue',
@@ -26,7 +28,7 @@ export async function formatBatchUpdateRequest(
   const requests = dateFound
     ? [updateCellsRequest]
     : [
-        ...createInsertRowAndDateRequest(sheetId, formattedDate),
+        ...insertRowWithDate(sheetId, formattedDate),
         updateCellsRequest,
       ];
 

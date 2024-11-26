@@ -56,7 +56,7 @@ export const mealColumnRanges = {
   snack: { startColumnIndex: 4, endColumnIndex: 5 },
 };
 
-//* Test SHeet Options - range options for individual sheets on test document
+//* Test Sheet Options - range options for individual sheets on test document
 //! remove and replace with relevant sheetOptions later
 export const testWeightSheetOptions = {
   sheetId: 306586463,
