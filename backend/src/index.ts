@@ -20,10 +20,6 @@ const client_id = process.env.CLIENT_ID!;
 const client_secret = process.env.CLIENT_SECRET!;
 const redirect_uri = process.env.REDIRECT_URI!;
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
-
 //* OAuth
 const oAuth2Client = new google.auth.OAuth2(
   client_id,
@@ -77,3 +73,7 @@ export { oAuth2Client };
 app.use(weightRoutes);
 app.use(bloodPressureRoutes);
 app.use(mealRoutes);
+
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
