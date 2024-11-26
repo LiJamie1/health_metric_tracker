@@ -27,47 +27,6 @@ const oAuth2Client = new google.auth.OAuth2(
   redirect_uri
 );
 
-// app.post('/api/auth/google', async (req, res) => {
-//   const { serverAuthCode } = req.body;
-
-//   const params = {
-//     code: serverAuthCode,
-//     client_id,
-//     client_secret,
-//     redirect_uri,
-//     grant_type: 'authorization_code',
-//   };
-
-//   const tokenUrl = 'https://oauth2.googleapis.com/token';
-
-//   try {
-//     const response = await axios.post(
-//       tokenUrl,
-//       new URLSearchParams(params),
-//       {
-//         headers: {
-//           'Content-Type': 'application/x-www-form-urlencoded',
-//         },
-//       }
-//     );
-//     const { access_token, refresh_token } = response.data;
-
-//     oAuth2Client.setCredentials({
-//       access_token,
-//       refresh_token,
-//     });
-
-//     res.status(200).json({
-//       message: 'Successfully requested token',
-//     });
-//   } catch (e: unknown) {
-//     console.log('Auth failed', e);
-//     res.status(500).json({
-//       message: 'Internal server error, tokenRequest',
-//     });
-//   }
-// });
-
 export { oAuth2Client };
 
 app.use(authRoutes);
