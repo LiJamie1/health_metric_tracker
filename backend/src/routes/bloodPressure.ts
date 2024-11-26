@@ -21,9 +21,8 @@ router.post(
   async (req: Request, res: Response) => {
     //! change to use actual spreadsheet later
     const spreadsheetId = process.env.TEST_SPREADSHEET_ID;
-
     if (!spreadsheetId) {
-      throw new Error('spreadsheetId is missing');
+      throw new Error('spreadsheetId is missing in tracking/bp');
     }
 
     const sheets = google.sheets({

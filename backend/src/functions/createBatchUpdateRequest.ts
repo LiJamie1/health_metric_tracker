@@ -5,11 +5,6 @@ import {
   formatValues,
 } from './helpers/sheetRequests';
 
-//! Bug - adds new rows
-//TODO Current behaviour - adds new rows with each submission
-//TODO Unexpected result - creates multiple rows with the same date if called multiple times
-//TODO Fix - properly integrate findDate to stop this behaviour
-//TODO Expected outcome - replace data instead of creating new row if date is found
 export async function createBatchUpdateRequest(
   userInputs: (string | number)[],
   spreadsheetId: string,

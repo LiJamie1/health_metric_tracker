@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
 import { google } from 'googleapis';
 import { oAuth2Client } from '../index'; // Importing oAuth2Client from index.ts
-import { testWeightSheetOptions } from '../constants';
-import { createBatchUpdateRequest } from '../functions';
+import { formattedDate, testWeightSheetOptions } from '../constants';
+import { createBatchUpdateRequest, findDate } from '../functions';
 
 const router = express.Router();
 
@@ -19,6 +19,12 @@ const router = express.Router();
 router.post(
   '/tracking/weight',
   async (req: Request, res: Response) => {
+    //! change to use actual spreadsheet later
+    const spreadsheetId = process.env.TEST_SPREADSHEET_ID;
+    if (!spreadsheetId) {
+      throw new Error('spreadsheetId is missing in tracking/weight');
+    }
+
     const sheets = google.sheets({
       version: 'v4',
       auth: oAuth2Client, // Using the oAuth2Client here
@@ -26,15 +32,20 @@ router.post(
 
     const inputs = req.body;
 
-    //* dateCorrect param false - force a new row and date
-    //* realistically this route is only used once a day max standardizing data
-    //* ie. checked twice a week on wednesday and sunday at 9am
+    //TODO replace 'Sheet2' with correct sheetName
+    const { dateFound } = await findDate(
+      spreadsheetId,
+      'Sheet2',
+      formattedDate,
+      oAuth2Client
+    );
+
     try {
       const weightBatchRequest = await createBatchUpdateRequest(
         inputs,
-        process.env.TEST_SPREADSHEET_ID!,
+        spreadsheetId,
         testWeightSheetOptions,
-        false
+        dateFound
       );
 
       await sheets.spreadsheets.batchUpdate(weightBatchRequest);
