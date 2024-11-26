@@ -1,4 +1,5 @@
 import { SheetOption } from '../../interfaces';
+import { MealColumnRange } from '../../types';
 
 export function insertRowWithDate(
   sheetId: number,
@@ -76,36 +77,49 @@ export function formatValues(inputs: (string | number)[]) {
     .filter((value) => value !== null);
 }
 
-//TODO refactor to allow formatting
 export function formatMealValues(
   inputs: { [key: string]: string },
-  mealColumnRanges: { [key: string]: { [key: string]: number } },
-  sheetOptions: Partial<SheetOption>
+  formatting: { [key: string]: boolean },
+  mealColumnRanges: MealColumnRange,
+  { sheetId, ...rangeOptions }: Partial<SheetOption>
 ) {
-  const { sheetId, ...rangeOptions } = sheetOptions;
-  const filteredInputs = Object.keys(inputs)
-    .filter((key) => inputs[key] !== '')
-    .reduce(
-      (acc, key) => {
-        acc[key] = inputs[key];
-        return acc;
-      },
-      {} as { [key: string]: string }
-    );
+  const filteredInputs = Object.fromEntries(
+    Object.entries(inputs).filter(([_, value]) => value !== '')
+  );
 
-  return Object.keys(filteredInputs).map((key) => ({
-    updateCells: {
-      range: { sheetId, ...rangeOptions, ...mealColumnRanges[key] },
-      rows: [
-        {
-          values: [
-            {
-              userEnteredValue: { stringValue: filteredInputs[key] },
-            },
-          ],
-        },
-      ],
-      fields: 'userEnteredValue',
-    },
-  }));
+  return Object.keys(filteredInputs).map((key) => {
+    const rgbColor = formatting[key]
+      ? { red: 1, green: 1, blue: 0 }
+      : { red: 1, green: 1, blue: 1 };
+
+    const range = {
+      sheetId,
+      ...rangeOptions,
+      ...mealColumnRanges[key],
+    };
+
+    return {
+      updateCells: {
+        range,
+        rows: [
+          {
+            values: [
+              {
+                userEnteredValue: {
+                  stringValue: filteredInputs[key],
+                },
+                userEnteredFormat: {
+                  backgroundColorStyle: {
+                    rgbColor,
+                  },
+                },
+              },
+            ],
+          },
+        ],
+        fields:
+          'userEnteredValue,userEnteredFormat.backgroundColorStyle',
+      },
+    };
+  });
 }

@@ -27,7 +27,7 @@ export default function Meals() {
     snack: '',
   });
 
-  const [formatOptions, setFormatOptions] = useState({
+  const [formatting, setFormatting] = useState({
     breakfast: false,
     lunch: false,
     dinner: false,
@@ -45,8 +45,8 @@ export default function Meals() {
     });
   };
 
-  const onFormatPress = (key: keyof typeof formatOptions) => {
-    setFormatOptions((prevFormatOptions) => {
+  const onFormatPress = (key: keyof typeof formatting) => {
+    setFormatting((prevFormatOptions) => {
       let newFormatOptions = { ...prevFormatOptions };
       newFormatOptions[key] = !newFormatOptions[key];
       return newFormatOptions;
@@ -55,7 +55,7 @@ export default function Meals() {
 
   const generateInputFields = () => {
     return Object.entries(inputs).map(([key, values]) => {
-      const formatKey = key as keyof typeof formatOptions;
+      const formatKey = key as keyof typeof formatting;
       const value = values;
       const isDateKey = key === 'date';
       const containerStyle = isDateKey
@@ -67,7 +67,7 @@ export default function Meals() {
         : `${key.charAt(0).toUpperCase() + key.slice(1)}`;
       const buttonStyle = {
         ...styles.mealButton,
-        backgroundColor: formatOptions[formatKey]
+        backgroundColor: formatting[formatKey]
           ? '#63646a'
           : '#414246',
       };
@@ -90,7 +90,7 @@ export default function Meals() {
               onPress={() => onFormatPress(formatKey)}
             >
               <ThemedText>
-                {formatOptions[formatKey] ? 'Out' : 'Home'}
+                {formatting[formatKey] ? 'Out' : 'Home'}
               </ThemedText>
             </Pressable>
           )}
@@ -102,7 +102,8 @@ export default function Meals() {
   const submitInput = async () => {
     try {
       await axios.post(`${localHost}/tracking/meals`, {
-        ...inputs,
+        inputs,
+        formatting,
       });
       setInputs({
         date: formattedDate,
@@ -111,7 +112,7 @@ export default function Meals() {
         dinner: '',
         snack: '',
       });
-      setFormatOptions({
+      setFormatting({
         breakfast: false,
         lunch: false,
         dinner: false,
@@ -126,9 +127,7 @@ export default function Meals() {
     .slice(1)
     .some((value) => value !== '');
 
-  const validDate = !isDateValid(inputs.date);
-
-  const isSubmitDisabled = inputsEmpty || validDate;
+  const isSubmitDisabled = inputsEmpty || !isDateValid(inputs.date);
 
   return (
     <ThemedView style={styles.container}>

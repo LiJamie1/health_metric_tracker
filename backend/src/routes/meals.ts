@@ -37,7 +37,7 @@ router.post(
       auth: oAuth2Client,
     });
 
-    const inputs = req.body;
+    const { inputs, formatting } = req.body;
     const { date } = inputs;
 
     //TODO replace 'Sheet3' with correct sheetName
@@ -61,6 +61,7 @@ router.post(
 
     const mealsBatchRequest = await createMealBatchRequest(
       inputs,
+      formatting,
       spreadsheetId,
       finalMealSheetOptions,
       mealColumnRanges,

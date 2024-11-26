@@ -1,5 +1,6 @@
 import { formattedDate } from '../constants';
 import { SheetOption } from '../interfaces';
+import { MealColumnRange } from '../types';
 import {
   formatMealValues,
   insertRowWithDate,
@@ -8,9 +9,10 @@ import {
 
 export async function createMealBatchRequest(
   { date, ...inputs }: { [key: string]: string },
+  formatting: { [key: string]: boolean },
   spreadsheetId: string,
   sheetOptions: Partial<SheetOption>,
-  mealColumnRanges: { [key: string]: { [key: string]: number } },
+  mealColumnRanges: MealColumnRange,
   dateFound: boolean
 ) {
   if (!sheetOptions.sheetId) {
@@ -22,6 +24,7 @@ export async function createMealBatchRequest(
 
   const updateCellsRequest = formatMealValues(
     inputs,
+    formatting,
     mealColumnRanges,
     sheetOptions
   );
