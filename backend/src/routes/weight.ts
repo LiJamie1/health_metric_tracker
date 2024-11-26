@@ -8,8 +8,12 @@ const router = express.Router();
 
 //! Using testWeightSheetOptions
 //TODO Replace testWeightSheetOptions
+//TODO Current behaviour - force create new row on entry
+//TODO Fix - use findDate to instead overwrite data if date is found
 //* Test - make a request to record data
 //* Expected Result - Sheet 2 has new row with date, lbs and f% data
+//* Test - make new request to record data
+//* Expected Result - Sheet 2 does not have a new row, but values of lbs and f% have changed
 router.post(
   '/tracking/weight',
   async (req: Request, res: Response) => {

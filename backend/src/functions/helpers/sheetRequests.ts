@@ -40,6 +40,12 @@ export function insertRowWithDate(
   ];
 }
 
+//TODO Bug - only sorts col a and does not move related cells
+//TODO Current behaviour - only sorts col A
+//TODO Unexpected result - sorts col A in z-a fashion but does not relocate relevant cells
+//TODO Fix - the request object to also move the cells relevant to col A
+//? Look into documentation to read how to also move relevant rows
+//TODO Expected outcome - move all related cells in the row along with col A
 export function sortDateCol(sheetId: number) {
   return [
     {

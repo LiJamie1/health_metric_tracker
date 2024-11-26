@@ -7,7 +7,7 @@ import axios from 'axios';
 export default function Weight() {
   // refresh with every new ngrok session
   const localHost =
-    'https://6701-2604-3d08-517d-c600-18aa-1995-6c79-59fe.ngrok-free.app';
+    'https://f384-2604-3d08-517d-c600-a97a-e426-e0d5-da5c.ngrok-free.app';
 
   const [inputs, setInputs] = useState<any[]>([0, 0]);
 
