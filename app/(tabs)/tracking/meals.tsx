@@ -4,6 +4,7 @@ import { ThemedView } from 'src/components/ThemedView';
 import { ThemedText } from '@/src/components/ThemedText';
 import styles from 'src/constants/Styling';
 import axios from 'axios';
+import { isDateValid } from '@/src/functions';
 
 export default function Meals() {
   const localHost =
@@ -121,9 +122,13 @@ export default function Meals() {
     }
   };
 
-  const isSubmitDisabled = !Object.values(inputs)
+  const inputsEmpty = !Object.values(inputs)
     .slice(1)
     .some((value) => value !== '');
+
+  const validDate = !isDateValid(inputs.date);
+
+  const isSubmitDisabled = inputsEmpty || validDate;
 
   return (
     <ThemedView style={styles.container}>
