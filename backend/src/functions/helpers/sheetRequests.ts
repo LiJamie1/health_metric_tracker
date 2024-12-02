@@ -84,12 +84,12 @@ export function formatMealValues(
   { sheetId, ...rangeOptions }: Partial<SheetOption>
 ) {
   const filteredInputs = Object.fromEntries(
-    Object.entries(inputs).filter(([_, value]) => value['1'])
+    Object.entries(inputs).filter(([_, value]) => value.stringInput)
   );
 
   return Object.keys(filteredInputs).map((key) => {
-    const inputData = filteredInputs.key.stringInput;
-    const rgbColor = filteredInputs.key.format
+    const inputData = filteredInputs[key].stringInput;
+    const rgbColor = filteredInputs[key].format
       ? { red: 1, green: 1, blue: 0 }
       : { red: 1, green: 1, blue: 1 };
 

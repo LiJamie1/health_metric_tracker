@@ -150,10 +150,6 @@ export default function Meals() {
           onPress={submitInput}
           disabled={isSubmitDisabled}
         />
-        <Button
-          title="test state"
-          onPress={() => console.log(date, inputs)}
-        />
       </ThemedView>
     </ThemedView>
   );
