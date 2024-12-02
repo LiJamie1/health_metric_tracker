@@ -1,24 +1,53 @@
-import { useState } from 'react';
-import { Button, Pressable, TextInput } from 'react-native';
+import React, { useState } from 'react';
+import { Button, Pressable, TextInput, Platform } from 'react-native';
 import { ThemedView } from 'src/components/ThemedView';
 import { ThemedText } from '@/src/components/ThemedText';
 import styles from 'src/constants/Styling';
 import axios from 'axios';
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
 
 export default function Meals() {
   const localHost =
     'https://f384-2604-3d08-517d-c600-a97a-e426-e0d5-da5c.ngrok-free.app';
 
-  const formattedDate: string = new Date().toLocaleDateString(
-    'en-GB',
-    {
+  const [date, setDate] = useState(new Date());
+  const [displayDate, setDisplayDate] = useState(
+    new Date().toLocaleDateString('en-GB', {
       day: '2-digit',
       month: '2-digit',
       year: '2-digit',
-    }
+    })
   );
+  const [showPicker, setShowPicker] = useState(false);
 
-  const [date, setDate] = useState(`${formattedDate}`);
+  const toggleDatepicker = () => {
+    setShowPicker(!showPicker);
+  };
+
+  const onDatepickerChange = (
+    event: DateTimePickerEvent,
+    date?: Date
+  ): void => {
+    if (event.type === 'set' && date) {
+      const currentDate = date;
+      setDate(date);
+
+      if (Platform.OS === 'android') {
+        toggleDatepicker();
+        setDisplayDate(
+          currentDate.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit',
+          })
+        );
+      }
+    } else {
+      toggleDatepicker();
+    }
+  };
 
   const [inputs, setInputs] = useState({
     breakfast: {
@@ -110,24 +139,6 @@ export default function Meals() {
     }
   };
 
-  //TODO Refactor/Remove when implementing react native date picker
-  const handleDateChange = (userInput: string) => {
-    const isValidDate = Date.parse(userInput); // Check if the input is a valid date format
-    if (isValidDate) {
-      const newDate = new Date(userInput).toLocaleDateString(
-        'en-GB',
-        {
-          day: '2-digit',
-          month: '2-digit',
-          year: '2-digit',
-        }
-      );
-      setDate(newDate);
-    } else {
-      console.error('Invalid date format');
-    }
-  };
-
   const inputsEmpty = !Object.values(inputs).some(
     (input) => input.stringInput !== ''
   );
@@ -137,12 +148,27 @@ export default function Meals() {
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>
-        <TextInput
-          id="date"
-          style={styles.input}
-          placeholder={date}
-          onChangeText={handleDateChange}
-        ></TextInput>
+        {showPicker && (
+          <Pressable onPress={toggleDatepicker}>
+            <DateTimePicker
+              mode="date"
+              display="spinner"
+              value={date}
+              onChange={onDatepickerChange}
+              positiveButton={{ textColor: 'white' }}
+              negativeButton={{ textColor: 'white' }}
+            />
+          </Pressable>
+        )}
+        <Pressable onPress={toggleDatepicker}>
+          <TextInput
+            id="date"
+            style={styles.input}
+            value={displayDate}
+            textAlign="center"
+            editable={false}
+          ></TextInput>
+        </Pressable>
         {generateInputFields()}
         <Button
           key="mealsSubmit"
