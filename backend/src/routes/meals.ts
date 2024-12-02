@@ -37,8 +37,7 @@ router.post(
       auth: oAuth2Client,
     });
 
-    const { inputs, formatting } = req.body;
-    const { date } = inputs;
+    const { date, inputs } = req.body;
 
     //TODO replace 'Sheet3' with correct sheetName
     const { dateFound, rowIndex } = await findDate(
@@ -60,8 +59,8 @@ router.post(
     };
 
     const mealsBatchRequest = await createMealBatchRequest(
+      date,
       inputs,
-      formatting,
       spreadsheetId,
       finalMealSheetOptions,
       mealColumnRanges,

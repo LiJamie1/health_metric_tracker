@@ -4,7 +4,6 @@ import { ThemedView } from 'src/components/ThemedView';
 import { ThemedText } from '@/src/components/ThemedText';
 import styles from 'src/constants/Styling';
 import axios from 'axios';
-import { isDateValid } from '@/src/functions';
 
 export default function Meals() {
   const localHost =
@@ -19,125 +18,141 @@ export default function Meals() {
     }
   );
 
+  const [date, setDate] = useState(`${formattedDate}`);
+
   const [inputs, setInputs] = useState({
-    date: formattedDate,
-    breakfast: '',
-    lunch: '',
-    dinner: '',
-    snack: '',
+    breakfast: {
+      stringInput: '',
+      format: false,
+    },
+    lunch: {
+      stringInput: '',
+      format: false,
+    },
+    dinner: {
+      stringInput: '',
+      format: false,
+    },
+    snack: {
+      stringInput: '',
+      format: false,
+    },
   });
 
-  const [formatting, setFormatting] = useState({
-    breakfast: false,
-    lunch: false,
-    dinner: false,
-    snack: false,
-  });
-
-  const handleInputChange = (
-    id: keyof typeof inputs,
+  const handleMealInputChange = (
+    key: keyof typeof inputs,
     input: string
   ) => {
     setInputs((prevInputs) => {
       const newInputs = { ...prevInputs };
-      newInputs[id] = input;
+      newInputs[key].stringInput = input;
       return newInputs;
     });
   };
 
-  const onFormatPress = (key: keyof typeof formatting) => {
-    setFormatting((prevFormatOptions) => {
-      let newFormatOptions = { ...prevFormatOptions };
-      newFormatOptions[key] = !newFormatOptions[key];
-      return newFormatOptions;
+  const onFormatPress = (key: keyof typeof inputs) => {
+    setInputs((prevInputs) => {
+      const newInputs = { ...prevInputs };
+      inputs[key].format = !inputs[key].format;
+      return newInputs;
     });
   };
 
   const generateInputFields = () => {
-    return Object.entries(inputs).map(([key, values]) => {
-      const formatKey = key as keyof typeof formatting;
-      const value = values;
-      const isDateKey = key === 'date';
-      const containerStyle = isDateKey
-        ? {}
-        : styles.mealSideBySideContainer;
-      const inputStyle = isDateKey ? styles.input : styles.mealInput;
-      const placeholderText = isDateKey
-        ? values
-        : `${key.charAt(0).toUpperCase() + key.slice(1)}`;
-      const buttonStyle = {
-        ...styles.mealButton,
-        backgroundColor: formatting[formatKey]
-          ? '#63646a'
-          : '#414246',
-      };
+    return Object.entries(inputs).map(
+      ([key, { stringInput, format }]) => {
+        const placeholderText = `${key.charAt(0).toUpperCase() + key.slice(1)}`;
+        const buttonStyle = {
+          ...styles.mealButton,
+          backgroundColor: format ? '#63646a' : '#414246',
+        };
 
-      return (
-        <ThemedView style={containerStyle} key={key}>
-          <TextInput
-            id={key}
-            style={inputStyle}
-            placeholder={placeholderText}
-            value={value}
-            onChangeText={(input) =>
-              handleInputChange(key as keyof typeof inputs, input)
-            }
-            placeholderTextColor="#5f6670"
-          />
-          {!isDateKey && (
+        return (
+          <ThemedView
+            style={styles.mealSideBySideContainer}
+            key={key}
+          >
+            <TextInput
+              id={key}
+              style={styles.mealInput}
+              placeholder={placeholderText}
+              value={stringInput}
+              onChangeText={(userInput) =>
+                handleMealInputChange(
+                  key as keyof typeof inputs,
+                  userInput
+                )
+              }
+              placeholderTextColor="#5f6670"
+            />
             <Pressable
               style={buttonStyle}
-              onPress={() => onFormatPress(formatKey)}
+              onPress={() =>
+                onFormatPress(key as keyof typeof inputs)
+              }
             >
-              <ThemedText>
-                {formatting[formatKey] ? 'Out' : 'Home'}
-              </ThemedText>
+              <ThemedText>{format ? 'Out' : 'Home'}</ThemedText>
             </Pressable>
-          )}
-        </ThemedView>
-      );
-    });
+          </ThemedView>
+        );
+      }
+    );
   };
 
   const submitInput = async () => {
     try {
       await axios.post(`${localHost}/tracking/meals`, {
+        date,
         inputs,
-        formatting,
-      });
-      setInputs({
-        date: formattedDate,
-        breakfast: '',
-        lunch: '',
-        dinner: '',
-        snack: '',
-      });
-      setFormatting({
-        breakfast: false,
-        lunch: false,
-        dinner: false,
-        snack: false,
       });
     } catch (e: unknown) {
       console.error('submitInput', e);
     }
   };
 
-  const inputsEmpty = !Object.values(inputs)
-    .slice(1)
-    .some((value) => value !== '');
+  //TODO Refactor/Remove when implementing react native date picker
+  const handleDateChange = (userInput: string) => {
+    const isValidDate = Date.parse(userInput); // Check if the input is a valid date format
+    if (isValidDate) {
+      const newDate = new Date(userInput).toLocaleDateString(
+        'en-GB',
+        {
+          day: '2-digit',
+          month: '2-digit',
+          year: '2-digit',
+        }
+      );
+      setDate(newDate);
+    } else {
+      console.error('Invalid date format');
+    }
+  };
 
-  const isSubmitDisabled = inputsEmpty || !isDateValid(inputs.date);
+  const inputsEmpty = !Object.values(inputs).some(
+    (input) => input.stringInput !== ''
+  );
+
+  const isSubmitDisabled = inputsEmpty;
 
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>
+        <TextInput
+          id="date"
+          style={styles.input}
+          placeholder={date}
+          onChangeText={handleDateChange}
+        ></TextInput>
         {generateInputFields()}
         <Button
           key="mealsSubmit"
           title="Submit"
           onPress={submitInput}
           disabled={isSubmitDisabled}
+        />
+        <Button
+          title="test state"
+          onPress={() => console.log(date, inputs)}
         />
       </ThemedView>
     </ThemedView>

@@ -1,3 +1,4 @@
+import { format } from 'path';
 import { SheetOption } from '../../interfaces';
 import { MealColumnRange } from '../../types';
 
@@ -78,17 +79,17 @@ export function formatValues(inputs: (string | number)[]) {
 }
 
 export function formatMealValues(
-  inputs: { [key: string]: string },
-  formatting: { [key: string]: boolean },
+  inputs: { [key: string]: { [key: string]: string } },
   mealColumnRanges: MealColumnRange,
   { sheetId, ...rangeOptions }: Partial<SheetOption>
 ) {
   const filteredInputs = Object.fromEntries(
-    Object.entries(inputs).filter(([_, value]) => value !== '')
+    Object.entries(inputs).filter(([_, value]) => value['1'])
   );
 
   return Object.keys(filteredInputs).map((key) => {
-    const rgbColor = formatting[key]
+    const inputData = filteredInputs.key.stringInput;
+    const rgbColor = filteredInputs.key.format
       ? { red: 1, green: 1, blue: 0 }
       : { red: 1, green: 1, blue: 1 };
 
@@ -106,7 +107,7 @@ export function formatMealValues(
             values: [
               {
                 userEnteredValue: {
-                  stringValue: filteredInputs[key],
+                  stringValue: inputData,
                 },
                 userEnteredFormat: {
                   backgroundColorStyle: {

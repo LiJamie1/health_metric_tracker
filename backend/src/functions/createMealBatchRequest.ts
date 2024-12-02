@@ -8,8 +8,8 @@ import {
 } from './helpers/sheetRequests';
 
 export async function createMealBatchRequest(
-  { date, ...inputs }: { [key: string]: string },
-  formatting: { [key: string]: boolean },
+  date: string,
+  inputs: { [key: string]: { [key: string]: string } },
   spreadsheetId: string,
   sheetOptions: Partial<SheetOption>,
   mealColumnRanges: MealColumnRange,
@@ -24,7 +24,6 @@ export async function createMealBatchRequest(
 
   const updateCellsRequest = formatMealValues(
     inputs,
-    formatting,
     mealColumnRanges,
     sheetOptions
   );
