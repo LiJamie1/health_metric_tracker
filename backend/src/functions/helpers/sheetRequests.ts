@@ -5,9 +5,13 @@ export function insertRowWithDate(
   sheetId: number,
   dateString: string
 ) {
-  const serialDate =
-    new Date(dateString).getTime() / 86400000 + 25569;
-  console.log(serialDate);
+  //* Force set time to 0 so only a date will be input to the cell
+  const modifiedDate = new Date(dateString);
+  modifiedDate.setHours(0, 0, 0, 0);
+  modifiedDate.setUTCHours(0, 0, 0, 0);
+
+  //* Using serial date format which is used by excel and google sheets
+  const serialDate = modifiedDate.getTime() / 86400000 + 25569;
   return [
     {
       insertDimension: {

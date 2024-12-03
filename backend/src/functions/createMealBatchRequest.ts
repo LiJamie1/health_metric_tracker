@@ -1,4 +1,3 @@
-import { formattedDate } from '../constants';
 import { SheetOption } from '../interfaces';
 import { MealColumnRange } from '../types';
 import {
@@ -20,7 +19,6 @@ export async function createMealBatchRequest(
   }
 
   const { sheetId } = sheetOptions;
-  const dateString = date === '' ? formattedDate : date;
 
   const updateCellsRequest = formatMealValues(
     inputs,
@@ -28,14 +26,10 @@ export async function createMealBatchRequest(
     sheetOptions
   );
 
-  //! Issue with date being input as string, sort z-a won't sort correctly
-  //? Read Documentation to figure out how to solve
-  //* Everthing gets input no problem
-  //* Sort Date z-a makes it so 02/12/24 gets placed after 19/11/24
   const requests = dateFound
     ? [...updateCellsRequest]
     : [
-        ...insertRowWithDate(sheetId, dateString),
+        ...insertRowWithDate(sheetId, date),
         ...updateCellsRequest,
         ...sortDateCol(sheetId),
       ];

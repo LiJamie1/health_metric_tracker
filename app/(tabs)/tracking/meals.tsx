@@ -7,24 +7,19 @@ import axios from 'axios';
 import DateTimePicker, {
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
+import {
+  defaultMealInput,
+  defaultDateString,
+} from '@/src/constants/utils';
 
 export default function Meals() {
   const localHost =
     'https://f384-2604-3d08-517d-c600-a97a-e426-e0d5-da5c.ngrok-free.app';
 
+  //* Extracted some defaults to utils.ts
   //* DATE
   const [date, setDate] = useState(new Date());
-
-  //* Force timeZone to stop day drifting due to generating as local time
-  //* and toLocaleDateString again applying local time
-  const [displayDate, setDisplayDate] = useState(
-    new Date().toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: '2-digit',
-      timeZone: 'UTC',
-    })
-  );
+  const [displayDate, setDisplayDate] = useState(defaultDateString);
   const [showPicker, setShowPicker] = useState(false);
 
   const toggleDatepicker = () => {
@@ -56,24 +51,7 @@ export default function Meals() {
     }
   };
   //* INPUTS
-  const [inputs, setInputs] = useState({
-    breakfast: {
-      stringInput: '',
-      format: false,
-    },
-    lunch: {
-      stringInput: '',
-      format: false,
-    },
-    dinner: {
-      stringInput: '',
-      format: false,
-    },
-    snack: {
-      stringInput: '',
-      format: false,
-    },
-  });
+  const [inputs, setInputs] = useState(defaultMealInput);
 
   const handleMealInputChange = (
     key: keyof typeof inputs,
@@ -81,7 +59,10 @@ export default function Meals() {
   ) => {
     setInputs((prevInputs) => {
       const newInputs = { ...prevInputs };
-      newInputs[key].stringInput = input;
+      newInputs[key] = {
+        ...newInputs[key],
+        stringInput: input,
+      };
       return newInputs;
     });
   };
@@ -101,34 +82,10 @@ export default function Meals() {
         displayDate,
         inputs,
       });
-      //* RESET STATES AFTER SUCCESS
+      //* RESET STATES
+      setInputs({ ...defaultMealInput });
       setDate(new Date());
-      setDisplayDate(
-        new Date().toLocaleDateString('en-GB', {
-          day: '2-digit',
-          month: '2-digit',
-          year: '2-digit',
-          timeZone: 'UTC',
-        })
-      );
-      setInputs({
-        breakfast: {
-          stringInput: '',
-          format: false,
-        },
-        lunch: {
-          stringInput: '',
-          format: false,
-        },
-        dinner: {
-          stringInput: '',
-          format: false,
-        },
-        snack: {
-          stringInput: '',
-          format: false,
-        },
-      });
+      setDisplayDate(defaultDateString);
     } catch (e: unknown) {
       console.error('submitInput', e);
     }
