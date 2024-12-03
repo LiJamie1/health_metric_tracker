@@ -12,12 +12,17 @@ export default function Meals() {
   const localHost =
     'https://f384-2604-3d08-517d-c600-a97a-e426-e0d5-da5c.ngrok-free.app';
 
+  //* DATE
   const [date, setDate] = useState(new Date());
+
+  //* Force timeZone to stop day drifting due to generating as local time
+  //* and toLocaleDateString again applying local time
   const [displayDate, setDisplayDate] = useState(
     new Date().toLocaleDateString('en-GB', {
       day: '2-digit',
       month: '2-digit',
       year: '2-digit',
+      timeZone: 'UTC',
     })
   );
   const [showPicker, setShowPicker] = useState(false);
@@ -31,24 +36,26 @@ export default function Meals() {
     date?: Date
   ): void => {
     if (event.type === 'set' && date) {
-      const currentDate = date;
-      setDate(date);
+      const currentDate = new Date(date);
+      setDate(currentDate);
 
       if (Platform.OS === 'android') {
         toggleDatepicker();
-        setDisplayDate(
-          currentDate.toLocaleDateString('en-GB', {
+        const modifiedDisplay = currentDate.toLocaleDateString(
+          'en-GB',
+          {
             day: '2-digit',
             month: '2-digit',
             year: '2-digit',
-          })
+          }
         );
+        setDisplayDate(modifiedDisplay);
       }
     } else {
       toggleDatepicker();
     }
   };
-
+  //* INPUTS
   const [inputs, setInputs] = useState({
     breakfast: {
       stringInput: '',
@@ -86,7 +93,54 @@ export default function Meals() {
       return newInputs;
     });
   };
+  //* SUBMIT BUTTON
+  const submitInput = async () => {
+    try {
+      await axios.post(`${localHost}/tracking/meals`, {
+        date,
+        displayDate,
+        inputs,
+      });
+      //* RESET STATES AFTER SUCCESS
+      setDate(new Date());
+      setDisplayDate(
+        new Date().toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: '2-digit',
+          year: '2-digit',
+          timeZone: 'UTC',
+        })
+      );
+      setInputs({
+        breakfast: {
+          stringInput: '',
+          format: false,
+        },
+        lunch: {
+          stringInput: '',
+          format: false,
+        },
+        dinner: {
+          stringInput: '',
+          format: false,
+        },
+        snack: {
+          stringInput: '',
+          format: false,
+        },
+      });
+    } catch (e: unknown) {
+      console.error('submitInput', e);
+    }
+  };
 
+  const inputsEmpty = !Object.values(inputs).some(
+    (input) => input.stringInput !== ''
+  );
+
+  const isSubmitDisabled = inputsEmpty;
+
+  //* FORM
   const generateInputFields = () => {
     return Object.entries(inputs).map(
       ([key, { stringInput, format }]) => {
@@ -127,23 +181,6 @@ export default function Meals() {
       }
     );
   };
-
-  const submitInput = async () => {
-    try {
-      await axios.post(`${localHost}/tracking/meals`, {
-        date,
-        inputs,
-      });
-    } catch (e: unknown) {
-      console.error('submitInput', e);
-    }
-  };
-
-  const inputsEmpty = !Object.values(inputs).some(
-    (input) => input.stringInput !== ''
-  );
-
-  const isSubmitDisabled = inputsEmpty;
 
   return (
     <ThemedView style={styles.container}>
