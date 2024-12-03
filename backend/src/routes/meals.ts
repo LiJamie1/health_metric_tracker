@@ -37,13 +37,13 @@ router.post(
       auth: oAuth2Client,
     });
 
-    const { date, inputs } = req.body;
+    const { date, displayDate, inputs } = req.body;
 
     //TODO replace 'Sheet3' with correct sheetName
     const { dateFound, rowIndex } = await findDate(
       spreadsheetId,
       'Sheet3',
-      date,
+      displayDate,
       oAuth2Client
     );
 

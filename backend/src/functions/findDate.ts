@@ -27,12 +27,11 @@ export async function findDate(
     const values = data.values;
 
     //* validation that values is not empty
-    if (!values)
-      throw new Error(
-        'Response Data Values invalid, findDate function'
-      );
-
-    if (values.length === 0 || values.every((row) => row[0] === ''))
+    if (
+      !values ||
+      values.length === 0 ||
+      values.every((row) => row[0] === '')
+    )
       return { dateFound: false, rowIndex: 0 };
 
     //* logic to manipulate values into output

@@ -1,4 +1,3 @@
-import { format } from 'path';
 import { SheetOption } from '../../interfaces';
 import { MealColumnRange } from '../../types';
 
@@ -6,6 +5,9 @@ export function insertRowWithDate(
   sheetId: number,
   dateString: string
 ) {
+  const serialDate =
+    new Date(dateString).getTime() / 86400000 + 25569;
+  console.log(serialDate);
   return [
     {
       insertDimension: {
@@ -31,12 +33,15 @@ export function insertRowWithDate(
           {
             values: [
               {
-                userEnteredValue: { stringValue: dateString },
+                userEnteredValue: { numberValue: serialDate },
+                userEnteredFormat: {
+                  numberFormat: { type: 'DATE', pattern: 'dd/MM/yy' },
+                },
               },
             ],
           },
         ],
-        fields: 'userEnteredValue',
+        fields: 'userEnteredValue,userEnteredFormat.numberFormat',
       },
     },
   ];
