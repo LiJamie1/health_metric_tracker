@@ -9,6 +9,16 @@ export default function BloodPressure() {
   const localHost =
     'https://f384-2604-3d08-517d-c600-a97a-e426-e0d5-da5c.ngrok-free.app';
 
+  const date = new Date();
+  const currentTime = new Date(date).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+  //* Current time is not separated by a ' ' thus replace the invisible separator with ' '
+  const normalizedTime = currentTime.replace(/\s+/g, ' ');
+  const [time] = normalizedTime.split(' ');
+
   const [isDay, setIsDay] = useState<boolean>(true);
 
   const toggleOnPress = () => {
@@ -21,6 +31,7 @@ export default function BloodPressure() {
     pulse: [0, 0, 0],
   });
 
+  //TODO Refactor for safety
   const handleInputChange = (
     id: keyof typeof inputs,
     index: number,
@@ -74,7 +85,7 @@ export default function BloodPressure() {
 
   const submitResultsArray = async () => {
     const finalResultsArray = Object.entries(inputs).map(
-      ([key, values]) => {
+      ([_, values]) => {
         const mean =
           values.reduce((sum, val) => sum + val, 0) / values.length;
         return Math.round(mean); // Round to the nearest full digit
@@ -85,6 +96,8 @@ export default function BloodPressure() {
     try {
       await axios.post(`${localHost}/tracking/blood-pressure`, {
         finalResultsArray,
+        date,
+        time,
         isDay,
       });
       setInputs({
@@ -113,6 +126,7 @@ export default function BloodPressure() {
           onPress={submitResultsArray}
           disabled={isSubmitDisabled}
         />
+        <Button title="test" onPress={() => console.log(time)} />
       </ThemedView>
     </ThemedView>
   );

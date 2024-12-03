@@ -3,12 +3,16 @@ import { ThemedView } from 'src/components/ThemedView';
 import React, { useState } from 'react';
 import styles from 'src/constants/Styling';
 import axios from 'axios';
+import { defaultDateString } from '@/src/constants/utils';
 
 export default function Weight() {
   // refresh with every new ngrok session
   const localHost =
     'https://f384-2604-3d08-517d-c600-a97a-e426-e0d5-da5c.ngrok-free.app';
 
+  const date = defaultDateString;
+
+  //* INPUTS
   const [inputs, setInputs] = useState<number[]>([0, 0]);
 
   const handleInputChange = (
@@ -16,22 +20,31 @@ export default function Weight() {
     input: string
   ) => {
     const index = id === 'lbs' ? 0 : 1;
+    const parsedInput = input === '' ? 0 : parseFloat(input);
+    if (isNaN(parsedInput)) {
+      throw new Error('Input is not a valid number');
+    }
     setInputs((prevInputs) => {
       const newInputs = [...prevInputs];
-      newInputs[index] = input === '' ? 0 : parseFloat(input);
+      newInputs[index] = parsedInput;
       return newInputs;
     });
   };
 
+  //* SUBMIT
   const submitInputArray = async () => {
     try {
-      await axios.post(`${localHost}/tracking/weight`, inputs);
+      await axios.post(`${localHost}/tracking/weight`, {
+        date,
+        inputs,
+      });
       setInputs([0, 0]);
     } catch (e: unknown) {
       console.error('submitInputArray:', e);
     }
   };
 
+  //TODO Adjust so it only checks if index 0 is 0 or NaN
   const isSubmitDisabled = !inputs.some(
     (value) => value !== 0 || isNaN(value)
   );

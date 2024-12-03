@@ -1,11 +1,7 @@
 import express, { Request, Response } from 'express';
 import { google } from 'googleapis';
 import { oAuth2Client } from '../index'; // Importing oAuth2C
-import {
-  testBpSheetOptions,
-  formattedDate,
-  formattedTime,
-} from '../constants';
+import { testBpSheetOptions } from '../constants';
 import { findDate, createBatchUpdateRequest } from '../functions';
 
 const router = express.Router();
@@ -32,7 +28,7 @@ router.post(
       auth: oAuth2Client,
     });
 
-    const { finalResultsArray, isDay } = req.body;
+    const { finalResultsArray, date, time, isDay } = req.body;
 
     const finalSheetOptions = {
       sheetId: testBpSheetOptions.sheetId,
@@ -42,12 +38,13 @@ router.post(
     const { dateFound } = await findDate(
       spreadsheetId,
       'Sheet1',
-      formattedDate,
+      date,
       oAuth2Client
     );
 
     const bpBatchRequest = await createBatchUpdateRequest(
-      [formattedTime, ...finalResultsArray],
+      date,
+      [time, ...finalResultsArray],
       spreadsheetId,
       finalSheetOptions,
       dateFound

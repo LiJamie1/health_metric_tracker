@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import { google } from 'googleapis';
 import { oAuth2Client } from '../index'; // Importing oAuth2Client from index.ts
-import { formattedDate, testWeightSheetOptions } from '../constants';
+import { testWeightSheetOptions } from '../constants';
 import { createBatchUpdateRequest, findDate } from '../functions';
 
 const router = express.Router();
@@ -11,6 +11,7 @@ const router = express.Router();
 //* Expected Result - Sheet 2 has new row with date, lbs and f% data
 //* Test - make new request to record data
 //* Expected Result - Sheet 2 does not have a new row, but values of lbs and f% have changed
+//TODO Conditional sheet options to ignore 0
 router.post(
   '/tracking/weight',
   async (req: Request, res: Response) => {
@@ -25,18 +26,21 @@ router.post(
       auth: oAuth2Client, // Using the oAuth2Client here
     });
 
-    const inputs = req.body;
+    const { date, inputs } = req.body;
 
     //TODO replace 'Sheet2' with correct sheetName
     const { dateFound } = await findDate(
       spreadsheetId,
       'Sheet2',
-      formattedDate,
+      date,
       oAuth2Client
     );
 
     try {
+      //TODO Replace testWeightSheetOption
+      //TODO Refactor to ignore 0 as a value
       const weightBatchRequest = await createBatchUpdateRequest(
+        date,
         inputs,
         spreadsheetId,
         testWeightSheetOptions,

@@ -1,23 +1,3 @@
-//* Global Vars
-const currentDate: Date = new Date();
-// Date in dd/mm/yy format
-export const formattedDate: string = currentDate.toLocaleDateString(
-  'en-GB',
-  {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-  }
-);
-// Time in 12hr clock, 00:00 AM format
-const localTime: string = currentDate.toLocaleTimeString([], {
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: true,
-});
-//TODO Remove dayPeriod if left unused
-export const [formattedTime, dayPeriod] = localTime.split(' ');
-
 //* Sheet Options - range options for individual sheets
 export const weightSheetOptions = {
   sheetId: 1606005094,

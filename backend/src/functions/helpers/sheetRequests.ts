@@ -73,6 +73,7 @@ export function sortDateCol(sheetId: number) {
   ];
 }
 
+//TODO Refactor to make 0 not show up (weight requests)
 export function formatValues(inputs: (string | number)[]) {
   return inputs
     .map((input) => {

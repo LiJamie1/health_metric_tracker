@@ -1,4 +1,3 @@
-import { formattedDate } from '../constants';
 import { SheetOption } from '../interfaces';
 import {
   insertRowWithDate,
@@ -6,6 +5,7 @@ import {
 } from './helpers/sheetRequests';
 
 export async function createBatchUpdateRequest(
+  date: string,
   userInputs: (string | number)[],
   spreadsheetId: string,
   { sheetId, ...rangeOptions }: SheetOption,
@@ -27,10 +27,7 @@ export async function createBatchUpdateRequest(
 
   const requests = dateFound
     ? [updateCellsRequest]
-    : [
-        ...insertRowWithDate(sheetId, formattedDate),
-        updateCellsRequest,
-      ];
+    : [...insertRowWithDate(sheetId, date), updateCellsRequest];
 
   const finalRequest = {
     spreadsheetId,
