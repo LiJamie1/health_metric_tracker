@@ -36,14 +36,26 @@ router.post(
       oAuth2Client
     );
 
+    const filteredInputs = inputs.filter(
+      (item: number) => item !== 0
+    );
+
+    const endColumnIndex = filteredInputs.length + 1;
+
+    const finalSheetOptions = {
+      ...testWeightSheetOptions,
+      startColumnIndex: 1,
+      endColumnIndex,
+    };
+
     try {
       //TODO Replace testWeightSheetOption
       //TODO Refactor to ignore 0 as a value
       const weightBatchRequest = await createBatchUpdateRequest(
         date,
-        inputs,
+        filteredInputs,
         spreadsheetId,
-        testWeightSheetOptions,
+        finalSheetOptions,
         dateFound
       );
 

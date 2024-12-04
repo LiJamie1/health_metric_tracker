@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import { google } from 'googleapis';
 import { oAuth2Client } from '../index'; // Importing oAuth2C
-import { testBpSheetOptions } from '../constants';
+import { bpColumnRanges, testBpSheetOptions } from '../constants';
 import { findDate, createBatchUpdateRequest } from '../functions';
 
 const router = express.Router();
@@ -28,19 +28,44 @@ router.post(
       auth: oAuth2Client,
     });
 
-    const { finalResultsArray, date, time, isDay } = req.body;
+    const { finalResultsArray, date } = req.body;
 
-    const finalSheetOptions = {
-      sheetId: testBpSheetOptions.sheetId,
-      ...testBpSheetOptions[isDay ? 'AM' : 'PM'],
-    };
+    const formattedDate = new Date(date).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+      timeZone: 'UTC',
+    });
+
+    const currentTime = new Date(date).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+    //* Normalizing time to get the required outputs
+    const normalizedTime = currentTime.replace(/\s+/g, ' ');
+    const timeParts = normalizedTime.split(' ');
+    if (timeParts.length !== 2)
+      throw new Error('Unexpected format of timeParts');
+    const [time, dayPeriod] = timeParts;
+    const normalizedDayPeriod = dayPeriod
+      .toLowerCase()
+      .replace(/\./g, '')
+      .trim() as 'am' | 'pm';
+
     //TODO replace 'Sheet1' with correct sheetName
     const { dateFound } = await findDate(
       spreadsheetId,
       'Sheet1',
-      date,
+      formattedDate,
       oAuth2Client
     );
+
+    const finalSheetOptions = {
+      ...testBpSheetOptions,
+      ...bpColumnRanges[normalizedDayPeriod],
+    };
 
     const bpBatchRequest = await createBatchUpdateRequest(
       date,

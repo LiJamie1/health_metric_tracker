@@ -3,14 +3,13 @@ import { ThemedView } from 'src/components/ThemedView';
 import React, { useState } from 'react';
 import styles from 'src/constants/Styling';
 import axios from 'axios';
-import { defaultDateString } from '@/src/constants/utils';
 
 export default function Weight() {
   // refresh with every new ngrok session
   const localHost =
     'https://f384-2604-3d08-517d-c600-a97a-e426-e0d5-da5c.ngrok-free.app';
 
-  const date = defaultDateString;
+  const date = new Date();
 
   //* INPUTS
   const [inputs, setInputs] = useState<number[]>([0, 0]);
@@ -44,27 +43,21 @@ export default function Weight() {
     }
   };
 
-  //TODO Adjust so it only checks if index 0 is 0 or NaN
-  const isSubmitDisabled = !inputs.some(
-    (value) => value !== 0 || isNaN(value)
-  );
+  const isSubmitDisabled = inputs[0] === 0 || isNaN(inputs[0]);
 
-  //TODO Add keys to components
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.content}>
         <TextInput
-          key="Lbs"
           id="Lbs"
           style={styles.input}
           placeholder="Lbs"
           keyboardType="numeric"
           onChangeText={(input) => handleInputChange('lbs', input)}
           placeholderTextColor="#000000"
-        ></TextInput>
+        />
 
         <TextInput
-          key="FatPercentage"
           id="FatPercentage"
           style={styles.input}
           placeholder="Fat Percentage"
@@ -73,7 +66,8 @@ export default function Weight() {
             handleInputChange('fatPercentage', input)
           }
           placeholderTextColor="#000000"
-        ></TextInput>
+        />
+
         <Button
           title="Submit"
           onPress={submitInputArray}

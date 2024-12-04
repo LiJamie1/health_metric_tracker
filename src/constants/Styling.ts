@@ -22,7 +22,6 @@ const styles = StyleSheet.create({
   sideBySideInputsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 20,
   },
   sideBySideInputs: {
     flex: 1,

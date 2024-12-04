@@ -5,6 +5,12 @@ export const defaultMealInput = {
   snack: { stringInput: '', format: false },
 };
 
+export const defaultBPInput = {
+  systolic: [0, 0, 0],
+  diastolic: [0, 0, 0],
+  pulse: [0, 0, 0],
+};
+
 //* Force timeZone to stop day drifting due to generating as local time
 //* and toLocaleDateString again applying local time
 export const defaultDateString = new Date().toLocaleDateString(
